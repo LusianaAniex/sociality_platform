@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoginSchema, LoginFormValues } from '@/lib/validation';
@@ -7,15 +8,16 @@ import { useMutation } from '@tanstack/react-query';
 import axiosInstance from '@/lib/axios';
 import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
-import { setCredentials } from '@/store/authSlice'; // Action Redux kita
+import { setCredentials } from '@/store/authSlice';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Eye, EyeOff } from 'lucide-react';
 
 export const LoginForm = () => {
   const router = useRouter();
   const dispatch = useDispatch();
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -32,11 +34,10 @@ export const LoginForm = () => {
       localStorage.removeItem('user');
 
       const response = await axiosInstance.post('/auth/login', data);
-      return response.data; // Biasanya berisi { token, user }
+      return response.data;
     },
     onSuccess: (responseData) => {
       // Extract token and user from nested structure
-      // Backend returns: { success: true, data: { token, user } }
       const { token, user } = responseData.data;
 
       dispatch(
@@ -46,13 +47,11 @@ export const LoginForm = () => {
         })
       );
 
-      // 2. Redirect ke Feed
       router.push('/');
     },
     onError: (error: any) => {
       console.error('Login error:', error);
 
-      // Better error messages based on status code
       if (error.response?.status === 403) {
         alert('Access denied. Please check your credentials and try again.');
       } else if (error.response?.status === 401) {
@@ -68,42 +67,70 @@ export const LoginForm = () => {
   };
 
   return (
-    <Card className='w-full max-w-md mx-auto'>
-      <CardHeader>
-        <CardTitle className='text-2xl text-center'>Masuk</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
-          <div className='space-y-2'>
-            <Label htmlFor='email'>Email</Label>
-            <Input
-              id='email'
-              type='email'
-              placeholder='john@example.com'
-              {...register('email')}
-            />
-            {errors.email && (
-              <p className='text-red-500 text-sm'>{errors.email.message}</p>
-            )}
-          </div>
+    <form onSubmit={handleSubmit(onSubmit)} className='space-y-6 w-full'>
+      {/* Email Field */}
+      <div className='space-y-2'>
+        <Label
+          htmlFor='email'
+          className='text-body-sm font-medium text-[#D5D7DA]'
+        >
+          Email
+        </Label>
+        <Input
+          id='email'
+          type='email'
+          placeholder='Enter your email'
+          {...register('email')}
+          className='w-full bg-transparent border border-[#414651] text-white placeholder:text-[#717680] focus:border-[#7F51F9] focus:ring-1 focus:ring-[#7F51F9] transition-colors h-12 px-4 rounded-md'
+        />
+        {errors.email && (
+          <p className='text-[#D9206E] text-body-xs'>{errors.email.message}</p>
+        )}
+      </div>
 
-          <div className='space-y-2'>
-            <Label htmlFor='password'>Password</Label>
-            <Input id='password' type='password' {...register('password')} />
-            {errors.password && (
-              <p className='text-red-500 text-sm'>{errors.password.message}</p>
-            )}
-          </div>
-
-          <Button
-            type='submit'
-            className='w-full'
-            disabled={mutation.isPending}
+      {/* Password Field */}
+      <div className='space-y-2'>
+        <Label
+          htmlFor='password'
+          className='text-body-sm font-medium text-[#D5D7DA]'
+        >
+          Password
+        </Label>
+        <div className='relative'>
+          <Input
+            id='password'
+            type={showPassword ? 'text' : 'password'}
+            placeholder='Enter your password'
+            {...register('password')}
+            className='w-full bg-transparent border border-[#414651] text-white placeholder:text-[#717680] focus:border-[#7F51F9] focus:ring-1 focus:ring-[#7F51F9] transition-colors h-12 px-4 pr-12 rounded-md'
+          />
+          <button
+            type='button'
+            onClick={() => setShowPassword(!showPassword)}
+            className='absolute right-4 top-1/2 -translate-y-1/2 text-[#A4A7AE] hover:text-white transition-colors'
           >
-            {mutation.isPending ? 'Loading...' : 'Masuk'}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+            {showPassword ? (
+              <EyeOff className='w-5 h-5' />
+            ) : (
+              <Eye className='w-5 h-5' />
+            )}
+          </button>
+        </div>
+        {errors.password && (
+          <p className='text-[#D9206E] text-body-xs'>
+            {errors.password.message}
+          </p>
+        )}
+      </div>
+
+      {/* Login Button */}
+      <Button
+        type='submit'
+        className='w-full h-12 bg-linear-to-r from-[#6936F2] to-[#7F51F9] hover:from-[#7F51F9] hover:to-[#6936F2] text-white font-semibold text-body-md transition-all duration-300 shadow-lg shadow-[#7F51F9]/20 rounded-md'
+        disabled={mutation.isPending}
+      >
+        {mutation.isPending ? 'Loading...' : 'Login'}
+      </Button>
+    </form>
   );
 };
