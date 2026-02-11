@@ -16,26 +16,23 @@ import {
 dayjs.extend(relativeTime);
 
 // Define the shape of a Post (Interface)
-// This should match your backend API response later
+// This matches the actual backend API response
 export interface Post {
-  id: string;
+  id: number;
   imageUrl: string;
   caption: string;
   createdAt: string;
-  user?: {
-    // Make user optional since backend might not include it
-    id: string;
+  author: {
+    // Backend returns 'author' not 'user'
+    id: number;
     username: string;
-    avatarUrl?: string;
+    name: string;
+    avatarUrl: string | null;
   };
-  userId?: string; // Backend might return userId instead
-  _count?: {
-    // Make optional since backend might not include it
-    likes: number;
-    comments: number;
-  };
-  isLiked?: boolean; // Did I like this?
-  isSaved?: boolean; // Did I save this?
+  likeCount: number; 
+  commentCount: number; 
+  likedByMe: boolean; 
+  isSaved?: boolean; 
 }
 
 interface PostCardProps {
@@ -43,15 +40,15 @@ interface PostCardProps {
 }
 
 export const PostCard = ({ post }: PostCardProps) => {
-  // Handle missing user data with fallback values
-  const username = post.user?.username || 'Unknown User';
-  const avatarUrl = post.user?.avatarUrl;
-  const userLink = post.user?.username ? `/users/${post.user.username}` : '#';
+  // Map backend fields to display values
+  const username = post.author.username;
+  const avatarUrl = post.author.avatarUrl ?? undefined; // Convert null to undefined for Avatar component
+  const userLink = `/users/${post.author.username}`;
 
-  // Handle missing count data
-  const likesCount = post._count?.likes ?? 0;
-  const commentsCount = post._count?.comments ?? 0;
-  const isLiked = post.isLiked ?? false;
+  // Use backend field names directly
+  const likesCount = post.likeCount;
+  const commentsCount = post.commentCount;
+  const isLiked = post.likedByMe;
   const isSaved = post.isSaved ?? false;
 
   return (
