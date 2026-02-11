@@ -14,10 +14,15 @@ export const axiosInstance = axios.create({
 // INTERCEPTOR
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    // Don't attach token to auth endpoints (login/register)
+    const isAuthEndpoint = config.url?.includes('/auth/login') || config.url?.includes('/auth/register');
+    
+    if (!isAuthEndpoint) {
+      const token = localStorage.getItem('token');
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
 
     return config;

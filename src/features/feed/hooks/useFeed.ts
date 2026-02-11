@@ -1,35 +1,46 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
-import axiosInstance from "@/lib/axios";
-import { Post } from "@/features/post/components/PostCard";
+import { useInfiniteQuery } from '@tanstack/react-query';
+import axiosInstance from '@/lib/axios';
+import { Post } from '@/features/post/components/PostCard';
 
 // 1. Define the API Response structure
-// The backend usually returns { data: Post[], meta: { page: 1, lastPage: 5 } }
+// The backend returns { items: Post[], pagination: { page: 1, limit: 20, total: 0 } }
 interface FeedResponse {
-  data: Post[];
-  meta: {
+  items: Post[];
+  pagination: {
     page: number;
-    last_page: number;
+    limit: number;
     total: number;
   };
 }
 
 // 2. The Fetch Function
 const fetchFeed = async ({ pageParam = 1 }) => {
-  // We call /feed?page=1
-  const response = await axiosInstance.get(`/feed?page=${pageParam}`);
-  return response.data;
+  try {
+    // We call /feed?page=1
+    const response = await axiosInstance.get(`/feed?page=${pageParam}`);
+    console.log('Feed API Response:', response.data);
+    // Backend returns: { success: true, message: 'OK', data: { data: Post[], meta: {...} } }
+    // We return response.data.data to get { data: Post[], meta: {...} }
+    return response.data.data;
+  } catch (error) {
+    console.error('Feed API Error:', error);
+    throw error;
+  }
 };
 
 // 3. The Hook
 export const useFeed = () => {
   return useInfiniteQuery({
-    queryKey: ["feed"], // Unique ID for this data
+    queryKey: ['feed'], // Unique ID for this data
     queryFn: fetchFeed,
     initialPageParam: 1,
     getNextPageParam: (lastPage: FeedResponse) => {
-      // Logic: If current page < last page, next page is +1. Else, stop.
-      if (lastPage.meta.page < lastPage.meta.last_page) {
-        return lastPage.meta.page + 1;
+      // Logic: If there are more items to load, next page is +1
+      const totalPages = Math.ceil(
+        lastPage.pagination.total / lastPage.pagination.limit
+      );
+      if (lastPage.pagination.page < totalPages) {
+        return lastPage.pagination.page + 1;
       }
       return undefined;
     },
