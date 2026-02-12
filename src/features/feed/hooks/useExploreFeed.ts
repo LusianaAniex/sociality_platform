@@ -1,16 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import axiosInstance from '@/lib/axios';
-import { Post } from '@/features/post/components/PostCard';
-
-// API Response structure matching the feed endpoint
-interface ExploreResponse {
-  items: Post[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-  };
-}
+import { ExploreResponse } from '@/features/feed/types';
 
 // Fetch all posts from the platform (not just followed users)
 const fetchExploreFeed = async ({ pageParam = 1 }) => {

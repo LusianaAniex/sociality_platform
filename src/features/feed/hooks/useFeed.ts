@@ -1,17 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { axiosInstance } from '@/lib/axios';
-import { Post } from '@/features/post/components/PostCard'; // Ensure Post is exported from PostCard.tsx
-
-// 1. Internal Interface (What our components expect)
-export interface FeedResponse {
-  items: Post[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    lastPage: number;
-  };
-}
+import { FeedResponse } from '@/features/feed/types';
 
 export const useFeed = () => {
   return useInfiniteQuery({
@@ -62,7 +51,8 @@ export const useFeed = () => {
             page: backendData.pagination.page,
             limit: backendData.pagination.limit,
             total: backendData.pagination.total,
-            lastPage: backendData.pagination.totalPages,
+            totalPages: backendData.pagination.totalPages,
+            lastPage: backendData.pagination.totalPages, // Same as totalPages for compatibility
           },
         };
       } catch (error) {
@@ -80,7 +70,7 @@ export const useFeed = () => {
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
-      if (lastPage.pagination.page < lastPage.pagination.lastPage) {
+      if (lastPage.pagination.page < lastPage.pagination.totalPages) {
         return lastPage.pagination.page + 1;
       }
       return undefined;

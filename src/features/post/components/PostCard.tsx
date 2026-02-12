@@ -15,32 +15,11 @@ import {
   CardHeader,
 } from '@/components/ui/card';
 import { axiosInstance } from '@/lib/axios';
+import { Post, PostCardProps } from '@/features/post/types';
+import { CommentSection } from '@/features/post/components/CommentSection';
 
 // Setup Day.js to show "2 hours ago"
 dayjs.extend(relativeTime);
-
-// Define the shape of a Post (Interface)-matches the actual backend API response
-export interface Post {
-  id: number;
-  imageUrl: string;
-  caption: string;
-  createdAt: string;
-  author: {
-    id: number;
-    username: string;
-    name: string;
-    avatarUrl: string | null;
-  };
-  likeCount: number;
-  commentCount: number;
-  likedByMe: boolean;
-  isSaved?: boolean;
-}
-
-interface PostCardProps {
-  post: Post;
-  priority?: boolean; // For LCP optimization on first post
-}
 
 export const PostCard = ({ post, priority = false }: PostCardProps) => {
   // Map backend fields to display values
@@ -54,6 +33,9 @@ export const PostCard = ({ post, priority = false }: PostCardProps) => {
   const [isLiked, setIsLiked] = useState(post.likedByMe);
   const [likesCount, setLikesCount] = useState(post.likeCount);
   const [isLiking, setIsLiking] = useState(false); // To prevent spam-clicking
+
+  // ADD STATE FOR COMMENT MODAL (Mobile only)
+  const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
 
   // CREATE THE LIKE HANDLER
   const handleLike = async () => {
@@ -79,102 +61,125 @@ export const PostCard = ({ post, priority = false }: PostCardProps) => {
   };
 
   return (
-    <Card className='border-0 shadow-none bg-transparent text-base-white mb-6'>
-      {/* HEADER: Author Info */}
-      <CardHeader className='flex flex-row items-center gap-3 p-0 pb-4'>
-        <Link href={userLink}>
-          <Avatar className='w-10 h-10 border border-neutral-800'>
-            <AvatarImage src={avatarUrl} alt={username} />
-            <AvatarFallback className='bg-neutral-800 text-base-white'>
-              {username[0].toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        </Link>
-        <div className='flex flex-col'>
-          <Link
-            href={userLink}
-            className='text-body-sm font-semibold hover:text-primary-200 transition-colors'
-          >
-            {username}
+    <>
+      <Card className='border-0 shadow-none bg-transparent text-base-white mb-6'>
+        {/* HEADER: Author Info */}
+        <CardHeader className='flex flex-row items-center gap-3 p-0 pb-4'>
+          <Link href={userLink}>
+            <Avatar className='w-10 h-10 border border-neutral-800'>
+              <AvatarImage src={avatarUrl} alt={username} />
+              <AvatarFallback className='bg-neutral-800 text-base-white'>
+                {username[0].toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
           </Link>
-          <span className='text-body-xs text-neutral-400'>
-            {dayjs(post.createdAt).fromNow()}
-          </span>
-        </div>
-      </CardHeader>
-
-      {/* BODY: Image & Caption */}
-      <CardContent className='p-0'>
-        <div className='relative aspect-square w-full bg-neutral-900 overflow-hidden'>
-          <Image
-            src={post.imageUrl}
-            alt={post.caption}
-            fill
-            className='object-cover'
-            priority={priority}
-          />
-        </div>
-      </CardContent>
-
-      {/* FOOTER: Actions & Caption */}
-      <CardFooter className='flex flex-col items-start p-0 pt-4 gap-3'>
-        {/* Action Buttons Row */}
-        <div className='flex w-full justify-between items-center'>
-          <div className='flex gap-5'>
-            {/* Like Button */}
-            <button
-              onClick={handleLike}
-              disabled={isLiking}
-              className='flex items-center gap-2 group active:scale-125 transition-transform'
-            >
-              <Heart
-                className={`w-6 h-6 transition-colors ${isLiked ? 'fill-accent-red text-accent-red' : 'text-base-white group-hover:text-accent-red'}`}
-              />
-              <span className='text-body-sm font-semibold'>{likesCount}</span>
-            </button>
-
-            {/* Comment Button */}
+          <div className='flex flex-col'>
             <Link
-              href={`/posts/${post.id}`}
-              className='flex items-center gap-2 group'
+              href={userLink}
+              className='text-body-sm font-semibold hover:text-primary-200 transition-colors'
             >
-              <MessageCircle className='w-6 h-6 text-base-white group-hover:text-primary-200 transition-colors' />
-              <span className='text-body-sm font-semibold'>
-                {commentsCount}
-              </span>
+              {username}
             </Link>
+            <span className='text-body-xs text-neutral-400'>
+              {dayjs(post.createdAt).fromNow()}
+            </span>
+          </div>
+        </CardHeader>
 
-            {/* Share/Send Button */}
-            <button className='flex items-center gap-2 group'>
-              <Send className='w-6 h-6 text-base-white group-hover:text-primary-200 transition-colors' />
-              <span className='text-body-sm font-semibold'>0</span>
+        {/* BODY: Image & Caption */}
+        <CardContent className='p-0'>
+          <div className='relative aspect-square w-full bg-neutral-900 overflow-hidden'>
+            <Image
+              src={post.imageUrl}
+              alt={post.caption}
+              fill
+              className='object-cover'
+              priority={priority}
+            />
+          </div>
+        </CardContent>
+
+        {/* FOOTER: Actions & Caption */}
+        <CardFooter className='flex flex-col items-start p-0 pt-4 gap-3'>
+          {/* Action Buttons Row */}
+          <div className='flex w-full justify-between items-center'>
+            <div className='flex gap-5'>
+              {/* Like Button */}
+              <button
+                onClick={handleLike}
+                disabled={isLiking}
+                className='flex items-center gap-2 group active:scale-125 transition-transform'
+              >
+                <Heart
+                  className={`w-6 h-6 transition-colors ${isLiked ? 'fill-accent-red text-accent-red' : 'text-base-white group-hover:text-accent-red'}`}
+                />
+                <span className='text-body-sm font-semibold'>{likesCount}</span>
+              </button>
+
+              {/* Comment Button - Opens modal on both mobile and desktop */}
+              <button
+                onClick={() => setIsCommentModalOpen(true)}
+                className='flex items-center gap-2 group'
+              >
+                <MessageCircle className='w-6 h-6 text-base-white group-hover:text-primary-200 transition-colors' />
+                <span className='text-body-sm font-semibold'>
+                  {commentsCount}
+                </span>
+              </button>
+
+              {/* Share/Send Button */}
+              <button className='flex items-center gap-2 group'>
+                <Send className='w-6 h-6 text-base-white group-hover:text-primary-200 transition-colors' />
+                <span className='text-body-sm font-semibold'>0</span>
+              </button>
+            </div>
+
+            {/* Save Button */}
+            <button>
+              <Bookmark
+                className={`w-6 h-6 transition-colors ${isSaved ? 'fill-base-white text-base-white' : 'text-base-white hover:text-neutral-300'}`}
+              />
             </button>
           </div>
 
-          {/* Save Button */}
-          <button>
-            <Bookmark
-              className={`w-6 h-6 transition-colors ${isSaved ? 'fill-base-white text-base-white' : 'text-base-white hover:text-neutral-300'}`}
-            />
-          </button>
-        </div>
+          {/* CAPTION */}
+          <div className='text-body-sm mt-1'>
+            <span className='font-bold mr-2'>{username}</span>
+            <span className='text-neutral-300'>{post.caption}</span>
+          </div>
 
-        {/* CAPTION */}
-        <div className='text-body-sm mt-1'>
-          <span className='font-bold mr-2'>{username}</span>
-          <span className='text-neutral-300'>{post.caption}</span>
-        </div>
+          {/* SHOW MORE COMMENTS LINK */}
+          {commentsCount > 0 && (
+            <Link
+              href={`/posts/${post.id}`}
+              className='text-body-sm font-medium text-primary-200 hover:text-primary-300 transition-colors'
+            >
+              Show More
+            </Link>
+          )}
+        </CardFooter>
+      </Card>
 
-        {/* SHOW MORE COMMENTS LINK */}
-        {commentsCount > 0 && (
-          <Link
-            href={`/posts/${post.id}`}
-            className='text-body-sm font-medium text-primary-200 hover:text-primary-300 transition-colors'
-          >
-            Show More
-          </Link>
-        )}
-      </CardFooter>
-    </Card>
+      {/* Comment Modal - Mobile (Sheet) */}
+      <div className='md:hidden'>
+        <CommentSection
+          postId={post.id}
+          variant='mobile'
+          isOpen={isCommentModalOpen}
+          onClose={() => setIsCommentModalOpen(false)}
+        />
+      </div>
+
+      {/* Comment Modal - Desktop (Dialog with image) */}
+      <div className='hidden md:block'>
+        <CommentSection
+          postId={post.id}
+          variant='desktop'
+          isOpen={isCommentModalOpen}
+          onClose={() => setIsCommentModalOpen(false)}
+          post={post}
+        />
+      </div>
+    </>
   );
 };

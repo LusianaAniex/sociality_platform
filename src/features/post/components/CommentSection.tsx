@@ -1,161 +1,241 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { Loader2, Send } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Loader2, Smile, X, Send } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet';
 import { axiosInstance } from '@/lib/axios';
+import { Comment, CommentSectionProps } from '@/features/post/types';
 
 dayjs.extend(relativeTime);
 
+const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 
-export interface Comment {
-  id: number;
-  text: string;
-  createdAt: string;
-  author: {
-    username: string;
-    avatarUrl: string | null;
-  };
-}
-
-interface CommentSectionProps {
-  postId: number;
-}
-
-export const CommentSection = ({ postId }: CommentSectionProps) => {
-  const [comments, setComments] = useState<Comment[]>([]);
+export const CommentSection = ({
+  postId,
+  variant = 'desktop',
+  isOpen = false,
+  onClose,
+  post,
+}: CommentSectionProps) => {
   const [newComment, setNewComment] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const queryClient = useQueryClient();
 
-  // 1. Fetch comments on load
-  // 1. Fetch comments on load
-  useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        const response = await axiosInstance.get(`/posts/${postId}/comments`);
+  // --- 1. DATA FETCHING ---
+  const { data: comments = [], isLoading } = useQuery({
+    queryKey: ['comments', postId],
+    queryFn: async () => {
+      const response = await axiosInstance.get(`/posts/${postId}/comments`);
+      const fetchedData = response.data.data || response.data;
+      return Array.isArray(fetchedData) ? fetchedData : [];
+    },
+    enabled: isOpen, 
+  });
 
-        // Let's print the response so we can see exactly what the backend sends!
-        console.log('Comments from backend:', response.data);
+  const mutation = useMutation({
+    mutationFn: async (text: string) => {
+      return await axiosInstance.post(`/posts/${postId}/comments`, {
+        content: text,
+      });
+    },
+    onSuccess: () => {
+      setNewComment('');
+      setShowEmojiPicker(false);
+      queryClient.invalidateQueries({ queryKey: ['comments', postId] });
+    },
+    onError: () => alert('Failed to post comment'),
+  });
 
-        // Try to grab the data payload
-        const fetchedData = response.data.data || response.data;
-
-        // THE FIX: Only set comments if the data is actually an Array!
-        if (Array.isArray(fetchedData)) {
-          setComments(fetchedData);
-        } else {
-          // If it's null or an object, just fallback to an empty array
-          setComments([]); //Safe fallback
-        }
-      } catch (error) {
-        console.error('Failed to fetch comments:', error);
-        setComments([]); // Fallback on error too
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchComments();
-  }, [postId]);
-
-  // 2. Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
-
-    setIsSubmitting(true);
-    try {
-      // Sending the comment text to the backend
-      const response = await axiosInstance.post(`/posts/${postId}/comments`, {
-        text: newComment,
-      });
-
-      const createdComment = response.data.data || response.data;
-
-      // Instantly add the new comment to the top of the list
-      setComments((prev) => [createdComment, ...prev]);
-      setNewComment(''); // Clear the input field
-    } catch (error) {
-      console.error('Failed to post comment:', error);
-      alert('Failed to post comment. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    mutation.mutate(newComment);
   };
 
-  return (
-    <div className='bg-white border md:rounded-lg p-4 shadow-sm flex flex-col gap-6'>
-      <h3 className='font-semibold text-lg border-b pb-2'>Comments</h3>
+  const handleEmojiClick = (emojiObject: any) => {
+    setNewComment((prev) => prev + emojiObject.emoji);
+    setShowEmojiPicker(false);
+  };
 
-      {/* INPUT FORM */}
-      <form onSubmit={handleSubmit} className='flex gap-3 items-center'>
-        <Input
-          placeholder='Add a comment...'
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          disabled={isSubmitting || isLoading}
-          className='flex-1 rounded-full bg-gray-50'
-        />
-        <Button
-          type='submit'
-          disabled={!newComment.trim() || isSubmitting}
-          size='icon'
-          className='rounded-full shrink-0'
+  // --- 2. SHARED CONTENT COMPONENT ---
+  const CommentsContent = ({ isMobile = false }: { isMobile?: boolean }) => (
+    <div className='flex flex-col h-full bg-neutral-950 text-white w-full'>
+      {/* HEADER */}
+      <div className='flex items-center justify-between p-4 border-b border-neutral-800 shrink-0'>
+        <h3 className='font-semibold text-lg'>Comments</h3>
+        {/* Close Button: Explicitly calls onClose */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent bubbling issues
+            onClose?.();
+          }}
+          className='p-2 hover:bg-neutral-800 rounded-full transition-colors cursor-pointer'
         >
-          {isSubmitting ? (
-            <Loader2 className='w-4 h-4 animate-spin' />
-          ) : (
-            <Send className='w-4 h-4' />
-          )}
-        </Button>
-      </form>
+          <X className='w-5 h-5 text-neutral-400 hover:text-white' />
+        </button>
+      </div>
 
-      {/* COMMENT LIST */}
-      <div className='flex flex-col gap-5'>
+      {/* LIST */}
+      <div className='flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar'>
         {isLoading ? (
-          <div className='text-center text-sm text-gray-500 py-4'>
-            Loading comments...
+          <div className='flex justify-center py-10'>
+            <Loader2 className='w-6 h-6 animate-spin text-neutral-500' />
           </div>
         ) : comments.length === 0 ? (
-          <p className='text-sm text-center text-gray-500 py-4'>
-            No comments yet. Be the first!
-          </p>
+          <div className="flex flex-col items-center justify-center h-full text-neutral-500 space-y-2">
+             <p className='text-sm'>No comments yet.</p>
+             <p className='text-xs'>Start the conversation!</p>
+          </div>
         ) : (
-          comments.map((comment) => (
+          comments.map((comment: Comment) => (
             <div key={comment.id} className='flex gap-3'>
-              <Link href={`/users/${comment.author?.username || ''}`}>
-                <Avatar className='w-8 h-8'>
+              <Link href={`/users/${comment.author?.username || '#'}`}>
+                <Avatar className='w-8 h-8 ring-1 ring-neutral-800'>
                   <AvatarImage src={comment.author?.avatarUrl ?? undefined} />
-                  <AvatarFallback>
+                  <AvatarFallback className='bg-neutral-800 text-xs text-white'>
                     {comment.author?.username?.[0]?.toUpperCase() || '?'}
                   </AvatarFallback>
                 </Avatar>
               </Link>
-              <div className='flex flex-col flex-1'>
-                <div className='flex items-baseline gap-2'>
+              <div className='flex flex-col flex-1 gap-1'>
+                <div className='flex items-baseline justify-between'>
                   <Link
-                    href={`/users/${comment.author?.username || ''}`}
-                    className='text-sm font-semibold hover:underline'
+                    href={`/users/${comment.author?.username || '#'}`}
+                    className='text-sm font-semibold hover:text-neutral-300 text-white'
                   >
                     {comment.author?.username || 'Unknown'}
                   </Link>
-                  <span className='text-xs text-gray-500'>
+                  <span className='text-[10px] text-neutral-500'>
                     {dayjs(comment.createdAt).fromNow()}
                   </span>
                 </div>
-                {/* Display the comment text */}
-                <p className='text-sm text-gray-800 mt-1'>{comment.text}</p>
+                <p className='text-sm text-neutral-300 leading-relaxed wrap-break-word'>
+                  {comment.text || comment.text}
+                </p>
               </div>
             </div>
           ))
         )}
       </div>
+
+      {/* INPUT AREA */}
+      <div className='shrink-0 bg-neutral-950 border-t border-neutral-800'>
+         {showEmojiPicker && (
+          <div className='px-4 pt-2'>
+            <EmojiPicker onEmojiClick={handleEmojiClick} theme={'dark' as any} width='100%' height='250px' />
+          </div>
+        )}
+        <form onSubmit={handleSubmit} className='p-3'>
+          <div className='flex gap-2 items-center bg-neutral-900 rounded-full px-2 py-1 border border-neutral-800 focus-within:border-neutral-700 transition-colors'>
+            <button
+              type='button'
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className='p-2 text-neutral-400 hover:text-white transition-colors'
+            >
+              <Smile className='w-5 h-5' />
+            </button>
+            <Input
+              placeholder='Add a comment...'
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              disabled={mutation.isPending}
+              className='flex-1 border-none bg-transparent text-white placeholder:text-neutral-500 focus-visible:ring-0 h-9'
+            />
+            <Button
+              type='submit'
+              disabled={!newComment.trim() || mutation.isPending}
+              variant='ghost'
+              size='sm'
+              className='text-blue-500 hover:text-blue-400 font-semibold px-3 hover:bg-transparent'
+            >
+              {mutation.isPending ? <Loader2 className='w-4 h-4 animate-spin' /> : 'Post'}
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
+  );
+
+  // --- 3. MOBILE VIEW (Sheet) ---
+  if (variant === 'mobile') {
+    return (
+      <Sheet open={isOpen} onOpenChange={(open) => !open && onClose?.()}>
+        <SheetContent side='bottom' className='h-[85vh] p-0 bg-neutral-950 border-neutral-800 text-white' showCloseButton={false}>
+          <SheetHeader className='sr-only'>
+            <SheetTitle>Comments</SheetTitle>
+            <SheetDescription>View comments</SheetDescription>
+          </SheetHeader>
+          <CommentsContent isMobile />
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  // --- 4. DESKTOP VIEW (Dialog) ---
+  return (
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={(open) => {
+        // Crucial fix: If open becomes false (user clicked outside), call onClose
+        if (open === false) {
+           onClose?.();
+        }
+      }}
+    >
+      <DialogContent 
+        // 1. Force max-width to be huge (screen-xl or wider)
+        // 2. Force layout to be flex row
+        // 3. Remove default padding (p-0) and close button
+        className='max-w-[1100px]! w-[95vw] h-[85vh] p-0 gap-0 bg-black border-neutral-800 overflow-hidden flex flex-row shadow-2xl outline-none'
+        showCloseButton={false} // Hide default Shadcn X, we use our own
+      >
+        <DialogHeader className='sr-only'>
+          <DialogTitle>Post Detail</DialogTitle>
+          <DialogDescription>View post and comments</DialogDescription>
+        </DialogHeader>
+
+        {/* LEFT: IMAGE (Takes remaining space) */}
+        <div className='flex-1 relative bg-black flex items-center justify-center overflow-hidden'>
+          {post?.imageUrl ? (
+            <Image
+              src={post.imageUrl}
+              alt="Post content"
+              fill
+              className='object-contain' // Ensures the whole image is seen
+              priority
+            />
+          ) : (
+             <div className="text-neutral-500">No Image</div>
+          )}
+        </div>
+
+        {/* RIGHT: COMMENTS (Fixed width) */}
+        <div className='w-[400px] border-l border-neutral-800 h-full flex flex-col'>
+          <CommentsContent />
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
