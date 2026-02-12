@@ -1,4 +1,4 @@
-"use client"; // Wajib karena pakai Provider (Context)
+"use client"; 
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Provider as ReduxProvider } from "react-redux";

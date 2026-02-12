@@ -39,9 +39,10 @@ export interface Post {
 
 interface PostCardProps {
   post: Post;
+  priority?: boolean; // For LCP optimization on first post
 }
 
-export const PostCard = ({ post }: PostCardProps) => {
+export const PostCard = ({ post, priority = false }: PostCardProps) => {
   // Map backend fields to display values
   const username = post.author.username;
   const avatarUrl = post.author.avatarUrl ?? undefined; // Convert null to undefined for Avatar component
@@ -110,7 +111,7 @@ export const PostCard = ({ post }: PostCardProps) => {
             alt={post.caption}
             fill
             className='object-cover'
-            priority={false} // Lazy load images
+            priority={priority}
           />
         </div>
       </CardContent>

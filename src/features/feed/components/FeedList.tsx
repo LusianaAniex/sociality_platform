@@ -57,8 +57,8 @@ export const FeedList = () => {
   return (
     <div className='flex flex-col gap-6 pb-20'>
       {/* Render Posts */}
-      {posts.map((post) => (
-        <PostCard key={post.id} post={post} />
+      {posts.map((post, index) => (
+        <PostCard key={post.id} post={post} priority={index === 0} />
       ))}
 
       {/* Loading Indicator at bottom */}
