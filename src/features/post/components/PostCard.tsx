@@ -96,7 +96,7 @@ export const PostCard = ({ post, priority = false }: PostCardProps) => {
           <div className='relative aspect-square w-full bg-neutral-900 overflow-hidden'>
             <Image
               src={post.imageUrl}
-              alt={post.caption}
+              alt={post.caption || 'Post image'}
               fill
               className='object-cover'
               priority={priority}

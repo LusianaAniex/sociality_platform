@@ -20,14 +20,19 @@ export const ExploreList = () => {
   const { ref, inView } = useInView();
 
   useEffect(() => {
-    if (inView && hasNextPage) {
+    if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [inView, hasNextPage, fetchNextPage]);
+  }, [inView, hasNextPage, fetchNextPage, isFetchingNextPage]);
 
   // Handle loading state
   if (status === 'pending') {
-    return <div className='text-center p-10'>Loading explore feed...</div>;
+    return (
+      <div className='flex justify-center items-center p-10'>
+        <Loader2 className='animate-spin h-8 w-8' />
+        <span className='ml-2'>Loading explore feed...</span>
+      </div>
+    );
   }
 
   // Handle error state
@@ -40,27 +45,39 @@ export const ExploreList = () => {
     );
   }
 
-  // Debug: Log the data structure in detail
-  console.log('Number of pages:', data?.pages.length);
-  console.log('First page object:', data?.pages[0]);
-  console.log(
-    'First page keys:',
-    data?.pages[0] ? Object.keys(data.pages[0]) : 'no data'
-  );
+  // Debug: Log the actual data structure to see what we're getting
+  console.log('Full data object:', data);
+  console.log('Pages:', data?.pages);
 
-  // Flatten pages into single list
+  // Try different ways to access the posts based on common API response structures
   const posts =
     data?.pages
       .flatMap((page) => {
-        const items = page.items || [];
-        console.log('Processing page, found items:', items);
-        return items;
+        // Check for different possible data structures
+        if (page?.items) {
+          console.log('Found items array:', page.items);
+          return page.items;
+        } else if ((page as any)?.posts) {
+          console.log('Found posts array:', (page as any).posts);
+          return (page as any).posts;
+        } else if (Array.isArray(page)) {
+          console.log('Page is an array:', page);
+          return page;
+        } else if ((page as any)?.data) {
+          console.log('Found data array:', (page as any).data);
+          return (page as any).data;
+        } else if ((page as any)?.results) {
+          console.log('Found results array:', (page as any).results);
+          return (page as any).results;
+        } else {
+          // If none of the above, log the page structure to help debug
+          console.log('Unknown page structure:', page);
+          return [];
+        }
       })
-      .filter(Boolean) || [];
+      .filter((post) => post && post.id) || []; // Ensure we have valid posts with IDs
 
-  // Debug: Log the data structure
-  console.log('Explore data structure:', data);
-  console.log('Filtered posts:', posts);
+  console.log('Final posts array:', posts);
 
   if (posts.length === 0) {
     return (
@@ -79,9 +96,11 @@ export const ExploreList = () => {
       ))}
 
       {/* Loading Indicator at bottom */}
-      <div ref={ref} className='flex justify-center p-4'>
-        {isFetchingNextPage && <Loader2 className='animate-spin' />}
-      </div>
+      {hasNextPage && (
+        <div ref={ref} className='flex justify-center p-4'>
+          {isFetchingNextPage && <Loader2 className='animate-spin' />}
+        </div>
+      )}
     </div>
   );
 };
