@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import dayjs from 'dayjs';
@@ -41,7 +41,13 @@ export const CommentSection = ({
 }: CommentSectionProps) => {
   const [newComment, setNewComment] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(isOpen);
   const queryClient = useQueryClient();
+
+  // Sync internal state with prop
+  useEffect(() => {
+    setInternalOpen(isOpen);
+  }, [isOpen]);
 
   // --- 1. DATA FETCHING ---
   const { data: comments = [], isLoading } = useQuery({
@@ -51,7 +57,7 @@ export const CommentSection = ({
       const fetchedData = response.data.data || response.data;
       return Array.isArray(fetchedData) ? fetchedData : [];
     },
-    enabled: isOpen, 
+    enabled: internalOpen, // Only fetch when dialog is open
   });
 
   const mutation = useMutation({
@@ -79,6 +85,18 @@ export const CommentSection = ({
     setShowEmojiPicker(false);
   };
 
+  // Unified close handler
+  const handleClose = () => {
+    setInternalOpen(false);
+    onClose?.();
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      handleClose();
+    }
+  };
+
   // --- 2. SHARED CONTENT COMPONENT ---
   const CommentsContent = ({ isMobile = false }: { isMobile?: boolean }) => (
     <div className='flex flex-col h-full bg-neutral-950 text-white w-full'>
@@ -88,10 +106,12 @@ export const CommentSection = ({
         {/* Close Button: Explicitly calls onClose */}
         <button
           onClick={(e) => {
-            e.stopPropagation(); // Prevent bubbling issues
-            onClose?.();
+            e.preventDefault();
+            e.stopPropagation();
+            handleClose();
           }}
           className='p-2 hover:bg-neutral-800 rounded-full transition-colors cursor-pointer'
+          type="button"
         >
           <X className='w-5 h-5 text-neutral-400 hover:text-white' />
         </button>
@@ -132,7 +152,7 @@ export const CommentSection = ({
                   </span>
                 </div>
                 <p className='text-sm text-neutral-300 leading-relaxed wrap-break-word'>
-                  {comment.text || comment.text}
+                  {comment.content || comment.text}
                 </p>
               </div>
             </div>
@@ -181,8 +201,12 @@ export const CommentSection = ({
   // --- 3. MOBILE VIEW (Sheet) ---
   if (variant === 'mobile') {
     return (
-      <Sheet open={isOpen} onOpenChange={(open) => !open && onClose?.()}>
-        <SheetContent side='bottom' className='h-[85vh] p-0 bg-neutral-950 border-neutral-800 text-white' showCloseButton={false}>
+      <Sheet open={internalOpen} onOpenChange={handleOpenChange}>
+        <SheetContent 
+          side='bottom' 
+          className='h-[85vh] p-0 bg-neutral-950 border-neutral-800 text-white' 
+          showCloseButton={false}
+        >
           <SheetHeader className='sr-only'>
             <SheetTitle>Comments</SheetTitle>
             <SheetDescription>View comments</SheetDescription>
@@ -196,20 +220,21 @@ export const CommentSection = ({
   // --- 4. DESKTOP VIEW (Dialog) ---
   return (
     <Dialog 
-      open={isOpen} 
-      onOpenChange={(open) => {
-        // Crucial fix: If open becomes false (user clicked outside), call onClose
-        if (open === false) {
-           onClose?.();
-        }
-      }}
+      open={internalOpen} 
+      onOpenChange={handleOpenChange}
     >
       <DialogContent 
-        // 1. Force max-width to be huge (screen-xl or wider)
-        // 2. Force layout to be flex row
-        // 3. Remove default padding (p-0) and close button
-        className='max-w-[1100px]! w-[95vw] h-[85vh] p-0 gap-0 bg-black border-neutral-800 overflow-hidden flex flex-row shadow-2xl outline-none'
-        showCloseButton={false} // Hide default Shadcn X, we use our own
+        className='max-w-[1100px] w-[95vw] h-[85vh] p-0 gap-0 bg-black border-neutral-800 overflow-hidden flex flex-row shadow-2xl outline-none'
+        showCloseButton={false}
+        onPointerDownOutside={(e) => {
+          // Prevent default but still close
+          e.preventDefault();
+          handleClose();
+        }}
+        onEscapeKeyDown={(e) => {
+          e.preventDefault();
+          handleClose();
+        }}
       >
         <DialogHeader className='sr-only'>
           <DialogTitle>Post Detail</DialogTitle>
@@ -223,7 +248,7 @@ export const CommentSection = ({
               src={post.imageUrl}
               alt="Post content"
               fill
-              className='object-contain' // Ensures the whole image is seen
+              className='object-contain'
               priority
             />
           ) : (

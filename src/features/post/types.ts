@@ -33,7 +33,8 @@ export interface Post {
  */
 export interface Comment {
   id: number;
-  text: string;
+  content: string;
+  text?: string;
   createdAt: string;
   author: {
     username: string;
