@@ -22,6 +22,8 @@ export interface Pagination {
 export interface FeedResponse {
   items: Post[];
   pagination: Pagination;
+  posts?: Post[];
+  data?: Post[];
 }
 
 /**

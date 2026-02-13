@@ -323,6 +323,7 @@ interface CommentsListProps {
   variant: 'mobile' | 'desktop' | 'inline';
   isMobile?: boolean;
   inputProps: CommentInputProps;
+  hideInput?: boolean;
 }
 
 const CommentsList = ({
@@ -331,10 +332,11 @@ const CommentsList = ({
   handleClose,
   variant,
   inputProps,
+  hideInput,
 }: CommentsListProps) => (
   <div className='flex flex-col h-full bg-neutral-950 text-white w-full'>
     {/* HEADER - Only for Mobile/Inline usually */}
-    <div className='flex items-center justify-between p-4 border-b border-neutral-800 shrink-0'>
+    <div className='hidden p-4 border-b border-neutral-800 shrink-0'>
       <h3 className='font-semibold text-lg'>Comments</h3>
       {variant !== 'inline' && (
         <button
@@ -370,7 +372,7 @@ const CommentsList = ({
     </div>
 
     {/* INPUT */}
-    <CommentInput {...inputProps} />
+    {!hideInput && <CommentInput {...inputProps} />}
   </div>
 );
 
@@ -382,7 +384,8 @@ export const CommentSection = ({
   isOpen = false,
   onClose,
   post,
-}: CommentSectionProps) => {
+  hideInput = false,
+}: CommentSectionProps & { hideInput?: boolean }) => {
   const [newComment, setNewComment] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [internalOpen, setInternalOpen] = useState(isOpen);
@@ -510,6 +513,7 @@ export const CommentSection = ({
         handleClose={handleClose}
         variant={variant}
         inputProps={inputProps}
+        hideInput={hideInput}
       />
     );
   }

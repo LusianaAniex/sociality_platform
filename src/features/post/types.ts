@@ -14,6 +14,8 @@ export interface Author {
 export interface Post {
   id: string;
   imageUrl: string;
+  image?: string;
+  media?: { url: string }[];
   caption: string;
   createdAt: string;
   author: Author;
