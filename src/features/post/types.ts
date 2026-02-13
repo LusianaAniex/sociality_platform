@@ -21,6 +21,7 @@ export interface Post {
   commentCount: number;
   likedByMe: boolean;
   isSaved?: boolean;
+  location?: string;
 }
 
 /**
