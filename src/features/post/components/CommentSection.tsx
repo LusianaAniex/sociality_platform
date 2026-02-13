@@ -331,10 +331,9 @@ export const CommentSection = ({
   return (
     <Dialog open={internalOpen} onOpenChange={handleOpenChange}>
       <DialogContent
-        className='max-w-[1100px] w-[95vw] h-[85vh] p-0 gap-0 bg-black border-neutral-800 overflow-hidden flex flex-row shadow-2xl outline-none'
+        className='max-w-[1600px] w-[95vw] h-[90vh] p-0 gap-0 bg-black border-neutral-800 overflow-hidden flex flex-row shadow-2xl outline-none'
         showCloseButton={false}
         onPointerDownOutside={(e) => {
-          // Prevent default but still close
           e.preventDefault();
           handleClose();
         }}
@@ -348,24 +347,26 @@ export const CommentSection = ({
           <DialogDescription>View post and comments</DialogDescription>
         </DialogHeader>
 
-        {/* LEFT: IMAGE (Takes remaining space) */}
-        <div className='flex-1 relative bg-black flex items-center justify-center overflow-hidden'>
+        {/* LEFT: IMAGE - 65% */}
+        <div className='w-[65%] relative bg-black flex items-center justify-center overflow-hidden'>
           {post?.imageUrl ? (
-            <Image
-              src={post.imageUrl}
-              alt='Post content'
-              fill
-              className='object-contain'
-              priority
-              sizes='(max-width: 768px) 100vw, 50vw'
-            />
+            <div className='relative w-full h-full flex items-center justify-center'>
+              <Image
+                src={post.imageUrl}
+                alt='Post content'
+                fill
+                className='object-contain p-4'
+                priority
+                sizes='65vw'
+              />
+            </div>
           ) : (
             <div className='text-neutral-500'>No Image</div>
           )}
         </div>
 
-        {/* RIGHT: COMMENTS (Fixed width) */}
-        <div className='w-[400px] border-l border-neutral-800 h-full flex flex-col'>
+        {/* RIGHT: COMMENTS - 35% */}
+        <div className='w-[35%] border-l border-neutral-800 h-full flex flex-col bg-neutral-950'>
           <CommentsList {...contentProps} />
         </div>
       </DialogContent>

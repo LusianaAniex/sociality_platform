@@ -21,6 +21,8 @@ import { CommentSection } from '@/features/post/components/CommentSection';
 // Setup Day.js to show "2 hours ago"
 dayjs.extend(relativeTime);
 
+import { useMediaQuery } from '@/hooks/use-media-query';
+
 export const PostCard = ({ post, priority = false }: PostCardProps) => {
   // Map backend fields to display values
   const username = post.author.username;
@@ -36,6 +38,9 @@ export const PostCard = ({ post, priority = false }: PostCardProps) => {
 
   // ADD STATE FOR COMMENT MODAL (Mobile only)
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+
+  // Check for desktop view
+  const isDesktop = useMediaQuery('(min-width: 768px)');
 
   // CREATE THE LIKE HANDLER
   const handleLike = async () => {
@@ -160,26 +165,24 @@ export const PostCard = ({ post, priority = false }: PostCardProps) => {
         </CardFooter>
       </Card>
 
-      {/* Comment Modal - Mobile (Sheet) */}
-      <div className='md:hidden'>
-        <CommentSection
-          postId={post.id}
-          variant='mobile'
-          isOpen={isCommentModalOpen}
-          onClose={() => setIsCommentModalOpen(false)}
-        />
-      </div>
-
-      {/* Comment Modal - Desktop (Dialog with image) */}
-      <div className='hidden md:block'>
-        <CommentSection
-          postId={post.id}
-          variant='desktop'
-          isOpen={isCommentModalOpen}
-          onClose={() => setIsCommentModalOpen(false)}
-          post={post}
-        />
-      </div>
+      {/* Conditionally render ONLY ONE CommentSection based on media query */}
+      {isCommentModalOpen &&
+        (isDesktop ? (
+          <CommentSection
+            postId={post.id}
+            variant='desktop'
+            isOpen={isCommentModalOpen}
+            onClose={() => setIsCommentModalOpen(false)}
+            post={post}
+          />
+        ) : (
+          <CommentSection
+            postId={post.id}
+            variant='mobile'
+            isOpen={isCommentModalOpen}
+            onClose={() => setIsCommentModalOpen(false)}
+          />
+        ))}
     </>
   );
 };
