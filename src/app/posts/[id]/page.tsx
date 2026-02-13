@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { CommentSection } from '@/features/post/components/CommentSection';
 import { axiosInstance } from '@/lib/axios';
+import { toast } from 'sonner';
 import { Post } from '@/features/post/types';
 import EmojiPicker, { Theme } from 'emoji-picker-react';
 import { Input } from '@/components/ui/input';
@@ -103,8 +104,19 @@ export default function PostDetailPage() {
       setPost((prev) =>
         prev ? { ...prev, commentCount: (prev.commentCount || 0) + 1 } : null
       );
+
+      // Success Toast
+      toast.success('Success Post', {
+        className: 'bg-green-600 text-white border-none',
+        description: 'Your comment has been posted successfully.',
+      });
     } catch (error) {
       console.error('Failed to post comment:', error);
+      // Error Toast
+      toast.error('Failed to Post', {
+        className: 'bg-red-600 text-white border-none',
+        description: 'Something went wrong. Please try again.',
+      });
     } finally {
       setIsPostingComment(false);
     }

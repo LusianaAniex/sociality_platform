@@ -12,12 +12,21 @@ import { PostCard } from '@/features/post/components/PostCard';
 import { UserProfile } from '@/features/profile/types';
 import { Post } from '@/features/post/types';
 import { FeedResponse } from '@/features/feed/types';
+import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
+import { setCredentials } from '@/store/authSlice';
+import { useEffect } from 'react';
 
 export default function ProfilePage() {
   const params = useParams();
   const username = params.username as string;
 
+  const { user: currentUser, token } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
+
   console.log('Username from params:', username); // Debug log
+
+  const isCurrentUser =
+    currentUser?.username?.toLowerCase() === username?.toLowerCase();
 
   // 1. Fetch Profile Info - FIXED ENDPOINT
   const {
@@ -45,6 +54,33 @@ export default function ProfilePage() {
       }
     },
   });
+
+  // Sync profile data with Redux if it's the current user and data has changed
+  useEffect(() => {
+    if (isCurrentUser && profile && currentUser && token) {
+      // Check if avatar or other key details need update in Redux
+      const profileAvatar =
+        profile.avatar ||
+        profile.avatarUrl ||
+        profile.profilePicture ||
+        profile.profileImage;
+      const currentAvatar = currentUser.avatar;
+
+      if (profileAvatar && profileAvatar !== currentAvatar) {
+        console.log('Syncing updated profile to Redux store');
+        dispatch(
+          setCredentials({
+            user: {
+              ...currentUser,
+              avatar: profileAvatar,
+              // Update other fields if necessary
+            },
+            token,
+          })
+        );
+      }
+    }
+  }, [isCurrentUser, profile, currentUser, dispatch, token]);
 
   // 2. Fetch User's Posts - FIXED ENDPOINT
   const {
@@ -124,10 +160,7 @@ export default function ProfilePage() {
   return (
     <main className='max-w-4xl mx-auto py-4 px-4 pb-20 md:py-8'>
       {/* 1. Header Section */}
-      <ProfileHeader
-        profile={profile}
-        isCurrentUser={false} // You can check this against your logged-in user ID later
-      />
+      <ProfileHeader profile={profile} isCurrentUser={isCurrentUser} />
 
       {/* 2. Tabs (Gallery vs Saved) */}
       <div className='flex border-t border-neutral-800 mb-1'>

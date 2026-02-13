@@ -5,6 +5,12 @@ interface User {
   username: string;
   email: string;
   avatar?: string;
+  name?: string;
+  fullName?: string;
+  phoneNumber?: string;
+  bio?: string;
+  avatarUrl?: string; // For API compatibility
+  profilePicture?: string; // For API compatibility
 }
 
 interface AuthState {

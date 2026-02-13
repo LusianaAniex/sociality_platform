@@ -1,6 +1,7 @@
 'use client';
 
 import { UserProfile } from '../types';
+import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
@@ -128,12 +129,14 @@ export default function ProfileHeader({
         {/* Buttons */}
         <div className='flex gap-2 mb-6'>
           {isCurrentUser ? (
-            <Button
-              variant='outline'
-              className='flex-1 border-neutral-700 text-white hover:bg-neutral-800 rounded-lg h-9'
-            >
-              Edit Profile
-            </Button>
+            <Link href='/edit-profile' className='flex-1'>
+              <Button
+                variant='outline'
+                className='w-full border-neutral-700 text-white hover:bg-neutral-800 rounded-lg h-9'
+              >
+                Edit Profile
+              </Button>
+            </Link>
           ) : (
             <Button
               onClick={handleFollowToggle}
@@ -213,12 +216,14 @@ export default function ProfileHeader({
             </div>
             <div className='flex gap-3'>
               {isCurrentUser ? (
-                <Button
-                  variant='outline'
-                  className='border-neutral-700 text-white hover:bg-neutral-800 rounded-full px-6'
-                >
-                  Edit Profile
-                </Button>
+                <Link href='/edit-profile'>
+                  <Button
+                    variant='outline'
+                    className='border-neutral-700 text-white hover:bg-neutral-800 rounded-full px-6'
+                  >
+                    Edit Profile
+                  </Button>
+                </Link>
               ) : (
                 <Button
                   onClick={handleFollowToggle}

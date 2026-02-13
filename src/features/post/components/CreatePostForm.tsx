@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { axiosInstance } from '@/lib/axios';
+import { toast } from 'sonner';
 
 export const CreatePostForm = () => {
   const router = useRouter();
@@ -32,28 +33,35 @@ export const CreatePostForm = () => {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!imageFile) return alert("Please select an image first!");
+    if (!imageFile) return alert('Please select an image first!');
 
     setIsLoading(true);
 
     try {
       // 1. Prepare data as FormData (required for files)
       const formData = new FormData();
-      formData.append("image", imageFile); // Make sure "image" matches your backend's expected field name
-      formData.append("caption", caption);
+      formData.append('image', imageFile); // Make sure "image" matches your backend's expected field name
+      formData.append('caption', caption);
 
       // 2. Send to your real backend
-      await axiosInstance.post("/posts", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      await axiosInstance.post('/posts', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       // 3. Redirect back to feed after success
-      router.push("/");
+      router.push('/');
       router.refresh(); // Tell Next.js to fetch the latest data
-      
+
+      toast.success('Success Post', {
+        className: 'bg-green-600 text-white border-none', // Custom green styling
+        description: 'Your post has been created successfully.',
+      });
     } catch (error) {
-      console.error("Failed to create post:", error);
-      alert("Something went wrong while posting!");
+      console.error('Failed to create post:', error);
+      toast.error('Failed to Post', {
+        className: 'bg-red-600 text-white border-none', // Custom red styling
+        description: 'Something went wrong while posting!',
+      });
     } finally {
       setIsLoading(false);
     }
