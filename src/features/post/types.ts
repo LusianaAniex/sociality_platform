@@ -1,13 +1,8 @@
 /**
- * Post-related TypeScript type definitions
- * Centralized types for the post feature
- */
-
-/**
  * Author information embedded in posts and comments
  */
 export interface Author {
-  id: number;
+  id: string;
   username: string;
   name: string;
   avatarUrl: string | null;
@@ -17,7 +12,7 @@ export interface Author {
  * Post model - matches the backend API response
  */
 export interface Post {
-  id: number;
+  id: string;
   imageUrl: string;
   caption: string;
   createdAt: string;
@@ -32,11 +27,12 @@ export interface Post {
  * Comment model
  */
 export interface Comment {
-  id: number;
+  id: string;
   content: string;
   text?: string;
   createdAt: string;
   author: {
+    id: string;
     username: string;
     avatarUrl: string | null;
   };
@@ -54,8 +50,8 @@ export interface PostCardProps {
  * Props for CommentSection component
  */
 export interface CommentSectionProps {
-  postId: number;
-  variant?: 'mobile' | 'desktop';
+  postId: string;
+  variant?: 'mobile' | 'desktop' | 'inline';
   isOpen?: boolean;
   onClose?: () => void;
   post?: Post; // For desktop modal to show image

@@ -258,7 +258,7 @@ export default function PostDetailPage() {
           <div className='flex-1 overflow-hidden'>
             <CommentSection
               postId={post.id}
-              variant='desktop'
+              variant='inline'
               isOpen={true}
               post={post}
             />
