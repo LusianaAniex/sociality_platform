@@ -165,6 +165,40 @@ const DesktopSidebar = ({
   onClose,
   inputProps,
 }: DesktopSidebarProps) => {
+  // ADDED STATE
+  const [isLiked, setIsLiked] = useState(post?.likedByMe ?? false);
+  const [likesCount, setLikesCount] = useState(post?.likeCount ?? 0);
+  const [isLiking, setIsLiking] = useState(false);
+
+  // Sync state if post changes
+  useEffect(() => {
+    if (post) {
+      setIsLiked(post.likedByMe);
+      setLikesCount(post.likeCount);
+    }
+  }, [post]);
+
+  const handleLike = async () => {
+    if (isLiking || !post) return;
+    const newIsLiked = !isLiked;
+
+    // Optimistic update
+    setIsLiked(newIsLiked);
+    setLikesCount((prev) => (newIsLiked ? prev + 1 : prev - 1));
+    setIsLiking(true);
+
+    try {
+      await axiosInstance.post(`/posts/${post.id}/like`);
+    } catch (error) {
+      console.error('Failed to toggle like:', error);
+      // Revert on error
+      setIsLiked(!newIsLiked);
+      setLikesCount((prev) => (!newIsLiked ? prev + 1 : prev - 1));
+    } finally {
+      setIsLiking(false);
+    }
+  };
+
   if (!post) return null;
 
   return (
@@ -254,14 +288,21 @@ const DesktopSidebar = ({
       <div className='p-4 border-t border-neutral-800 shrink-0 flex flex-col gap-3'>
         <div className='flex justify-between items-center'>
           <div className='flex gap-4'>
-            <Heart className='w-6 h-6 text-white hover:text-neutral-400 cursor-pointer' />
+            <Heart
+              onClick={handleLike}
+              className={`w-6 h-6 cursor-pointer transition-colors ${
+                isLiked
+                  ? 'fill-red-500 text-red-500'
+                  : 'text-white hover:text-neutral-400'
+              }`}
+            />
             <MessageCircle className='w-6 h-6 text-white hover:text-neutral-400 cursor-pointer' />
             <Send className='w-6 h-6 text-white hover:text-neutral-400 cursor-pointer' />
           </div>
           <Bookmark className='w-6 h-6 text-white hover:text-neutral-400 cursor-pointer' />
         </div>
         <div className='flex flex-col gap-1'>
-          <span className='text-sm font-semibold'>{post.likeCount} likes</span>
+          <span className='text-sm font-semibold'>{likesCount} likes</span>
           <span className='text-[10px] text-neutral-500 uppercase'>
             {dayjs(post.createdAt).format('MMMM D, YYYY')}
           </span>
