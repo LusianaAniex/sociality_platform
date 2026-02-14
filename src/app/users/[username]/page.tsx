@@ -185,7 +185,7 @@ export default function ProfilePage() {
         </div>
       ) : (
         <div className='grid grid-cols-3 gap-0.5'>
-          {posts?.map((post) => (
+          {posts?.map((post, index) => (
             // For the Grid View, we usually just show the image
             <Link
               href={`/posts/${post.id}`}
@@ -203,6 +203,7 @@ export default function ProfilePage() {
                 fill
                 sizes='(max-width: 768px) 33vw, 33vw'
                 className='object-cover group-hover:scale-105 transition-transform duration-300'
+                priority={index === 0}
               />
             </Link>
           ))}

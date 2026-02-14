@@ -1,0 +1,23 @@
+
+
+Trying: /users?search=jon
+Error: Request failed with status code 404
+Response Status: 404
+Response Data: "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/users</pre>\n</body>\n</html>\n"
+
+
+Trying: /users/search?q=jon
+Status: 200
+Data: {
+  "success": true,
+  "message": "OK",
+  "data": {
+    "users": [],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 0,
+      "totalPages": 0
+    }
+  }
+}

@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+
+import { SearchInput } from '@/components/search/SearchInput';
+import { SearchModal } from '@/components/search/SearchModal';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -52,12 +54,17 @@ export const TopNav = () => {
         </span>
       </Link>
 
-      {/* 2. RIGHT SIDE: Search Icon & User Profile */}
+      {/* 2. CENTER: Desktop Search */}
+      <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md hidden md:block'>
+        <SearchInput />
+      </div>
+
+      {/* 3. RIGHT SIDE: Mobile Search Icon & User Profile */}
       <div className='flex items-center gap-4'>
-        {/* Search Icon */}
-        <button className='hover:text-base-white transition-colors'>
-          <Search className='w-5 h-5 text-neutral-400' />
-        </button>
+        {/* Mobile Search Modal Trigger */}
+        <div className='md:hidden'>
+          <SearchModal />
+        </div>
 
         {/* User Profile Snippet */}
         {isMounted && user ? (
