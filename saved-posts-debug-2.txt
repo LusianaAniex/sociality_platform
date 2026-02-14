@@ -1,0 +1,27 @@
+
+
+Trying: GET /posts?type=saved
+Status: 200
+Data Preview: {"success":true,"message":"OK","data":{"posts":[{"id":160,"imageUrl":"https://res.cloudinary.com/dvz5kmwqx/image/upload/v1771076793/posts/bt8qszmzzgitlb5o6yud.jpg","caption":"Singa sang raja hutan","c
+
+
+Trying: GET /posts?isSaved=true
+Status: 200
+Data Preview: {"success":true,"message":"OK","data":{"posts":[{"id":160,"imageUrl":"https://res.cloudinary.com/dvz5kmwqx/image/upload/v1771076793/posts/bt8qszmzzgitlb5o6yud.jpg","caption":"Singa sang raja hutan","c
+
+
+Trying: GET /users/testuser/bookmarks
+Status: 404
+
+
+Trying: GET /bookmarks
+Status: 404
+
+
+Trying: GET /saved
+Status: 404
+
+
+Trying: GET /me/saved
+Status: 401
+Data Preview: {"success":false,"message":"Unauthorized","data":null}

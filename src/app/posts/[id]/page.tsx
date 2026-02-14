@@ -60,14 +60,45 @@ export default function PostDetailPage() {
     enabled: !!id,
   });
 
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isBookmarking, setIsBookmarking] = useState(false);
+
   // Keep local state in sync if query data changes
   useEffect(() => {
     if (queryData) {
       setPost(queryData);
       setIsLiked(queryData.likedByMe);
       setLikesCount(queryData.likeCount);
+      setIsBookmarked(queryData.isSaved ?? false);
     }
   }, [queryData]);
+
+  const handleSave = async () => {
+    if (isBookmarking || !post) return;
+
+    // Optimistic update
+    const newBookmarkedState = !isBookmarked;
+    setIsBookmarked(newBookmarkedState);
+    setIsBookmarking(true);
+
+    try {
+      if (newBookmarkedState) {
+        await axiosInstance.post(`/posts/${post.id}/save`);
+      } else {
+        await axiosInstance.delete(`/posts/${post.id}/save`);
+      }
+      toast.success(
+        newBookmarkedState ? 'Post saved' : 'Post removed from saved'
+      );
+    } catch (error) {
+      console.error('Failed to toggle bookmark:', error);
+      // Revert on error
+      setIsBookmarked(!newBookmarkedState);
+      toast.error('Failed to update bookmark');
+    } finally {
+      setIsBookmarking(false);
+    }
+  };
 
   const handleLike = async () => {
     if (isLiking || !post) return;
@@ -277,9 +308,9 @@ export default function PostDetailPage() {
                   <Send className='w-6 h-6 text-white hover:text-neutral-400' />
                 </button>
               </div>
-              <button>
+              <button onClick={handleSave} disabled={isBookmarking}>
                 <Bookmark
-                  className={`w-6 h-6 ${isSaved ? 'fill-white text-white' : 'text-white hover:text-neutral-400'}`}
+                  className={`w-6 h-6 transition-colors ${isBookmarked ? 'fill-white text-white' : 'text-white hover:text-neutral-400'}`}
                 />
               </button>
             </div>
@@ -328,8 +359,10 @@ export default function PostDetailPage() {
             </button>
             <span className='font-semibold'>Post</span>
           </div>
-          <button>
-            <Bookmark className='w-5 h-5' />
+          <button onClick={handleSave} disabled={isBookmarking}>
+            <Bookmark
+              className={`w-5 h-5 ${isBookmarked ? 'fill-white text-white' : ''}`}
+            />
           </button>
         </div>
 
@@ -361,8 +394,10 @@ export default function PostDetailPage() {
               <Send className='w-6 h-6 text-white' />
             </button>
           </div>
-          <button>
-            <Bookmark className='w-5 h-5' />
+          <button onClick={handleSave} disabled={isBookmarking}>
+            <Bookmark
+              className={`w-6 h-6 ${isBookmarked ? 'fill-white text-white' : 'text-white'}`}
+            />
           </button>
         </div>
 

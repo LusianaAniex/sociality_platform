@@ -14,7 +14,7 @@ import { Post } from '@/features/post/types';
 import { FeedResponse } from '@/features/feed/types';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import { setCredentials } from '@/store/authSlice';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function ProfilePage() {
   const params = useParams();
@@ -27,6 +27,8 @@ export default function ProfilePage() {
 
   const isCurrentUser =
     currentUser?.username?.toLowerCase() === username?.toLowerCase();
+
+  const [activeTab, setActiveTab] = useState<'gallery' | 'saved'>('gallery');
 
   // 1. Fetch Profile Info - FIXED ENDPOINT
   const {
@@ -88,11 +90,20 @@ export default function ProfilePage() {
     isLoading: postsLoading,
     error: postsError,
   } = useQuery<FeedResponse>({
-    queryKey: ['profile-posts', username],
+    queryKey: ['profile-posts', username, activeTab],
     queryFn: async () => {
-      console.log('Fetching posts for:', username); // Debug log
+      console.log(`Fetching ${activeTab} for:`, username);
       try {
-        // Try different possible endpoints for posts
+        if (activeTab === 'saved') {
+          // Only current user can see their saved posts usually
+          // Adjust endpoint based on what we found (api/me/saved was 401 which implies it exists)
+          // But we can try the endpoint we probed
+          const response = await axiosInstance.get('/me/saved');
+          console.log('Saved posts response:', response);
+          return response.data;
+        }
+
+        // Default: Gallery (User's posts)
         const { data } = await axiosInstance.get(`/users/${username}/posts`);
         console.log('Posts data received:', data); // Debug log
         return data;
@@ -164,18 +175,26 @@ export default function ProfilePage() {
 
       {/* 2. Tabs (Gallery vs Saved) */}
       <div className='flex border-t border-neutral-800 mb-1'>
-        <button className='flex-1 flex items-center justify-center gap-2 py-3 border-b-2 border-white text-white'>
+        <button
+          onClick={() => setActiveTab('gallery')}
+          className={`flex-1 flex items-center justify-center gap-2 py-3 transition-colors ${activeTab === 'gallery' ? 'border-b-2 border-white text-white' : 'text-neutral-500 hover:text-white'}`}
+        >
           <Grid3X3 className='w-4 h-4' />
           <span className='text-xs font-semibold uppercase tracking-wider'>
             Gallery
           </span>
         </button>
-        <button className='flex-1 flex items-center justify-center gap-2 py-3 text-neutral-500 hover:text-white transition-colors'>
-          <Bookmark className='w-4 h-4' />
-          <span className='text-xs font-semibold uppercase tracking-wider'>
-            Saved
-          </span>
-        </button>
+        {isCurrentUser && (
+          <button
+            onClick={() => setActiveTab('saved')}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 transition-colors ${activeTab === 'saved' ? 'border-b-2 border-white text-white' : 'text-neutral-500 hover:text-white'}`}
+          >
+            <Bookmark className='w-4 h-4' />
+            <span className='text-xs font-semibold uppercase tracking-wider'>
+              Saved
+            </span>
+          </button>
+        )}
       </div>
 
       {/* 3. Posts Grid */}
@@ -212,10 +231,12 @@ export default function ProfilePage() {
             <div className='col-span-3 flex flex-col items-center justify-center py-16 text-center px-4'>
               <div className='mb-6'>
                 <h3 className='text-lg font-bold text-white mb-2'>
-                  No posts yet
+                  {activeTab === 'saved' ? 'No saved posts' : 'No posts yet'}
                 </h3>
                 <p className='text-neutral-400 text-sm max-w-[280px] mx-auto leading-relaxed'>
-                  @{username} hasn't shared any posts yet.
+                  {activeTab === 'saved'
+                    ? 'Posts you save will appear here.'
+                    : `@${username} hasn't shared any posts yet.`}
                 </p>
               </div>
             </div>

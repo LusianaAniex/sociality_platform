@@ -1,0 +1,32 @@
+
+
+Trying: POST /posts/1/save
+Status: 401
+
+
+Trying: POST /posts/1/bookmark
+Status: 404
+
+
+Trying: DELETE /posts/1/save
+Status: 401
+
+
+Trying: DELETE /posts/1/bookmark
+Status: 404
+
+
+Trying: GET /users/me/saved
+Status: 404
+
+
+Trying: GET /users/saved
+Status: 404
+
+
+Trying: GET /posts/saved
+Status: 400
+
+
+Trying: GET /saved-posts
+Status: 404

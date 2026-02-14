@@ -30,7 +30,11 @@ export const PostCard = ({ post, priority = false }: PostCardProps) => {
   const userLink = `/users/${post.author.username}`;
   // Use backend field names directly
   const commentsCount = post.commentCount;
-  const isSaved = post.isSaved ?? false;
+
+  // ADD STATE FOR SAVED (Optimistic UI)
+  const [isBookmarked, setIsBookmarked] = useState(post.isSaved ?? false);
+  const [isBookmarking, setIsBookmarking] = useState(false);
+
   // ADD STATE FOR LIKES (Optimistic UI)
   const [isLiked, setIsLiked] = useState(post.likedByMe);
   const [likesCount, setLikesCount] = useState(post.likeCount);
@@ -41,6 +45,29 @@ export const PostCard = ({ post, priority = false }: PostCardProps) => {
 
   // Check for desktop view
   const isDesktop = useMediaQuery('(min-width: 768px)');
+
+  const handleSave = async () => {
+    if (isBookmarking) return;
+
+    // Optimistic update
+    const newBookmarkedState = !isBookmarked;
+    setIsBookmarked(newBookmarkedState);
+    setIsBookmarking(true);
+
+    try {
+      if (newBookmarkedState) {
+        await axiosInstance.post(`/posts/${post.id}/save`);
+      } else {
+        await axiosInstance.delete(`/posts/${post.id}/save`);
+      }
+    } catch (error) {
+      console.error('Failed to toggle bookmark:', error);
+      // Revert on error
+      setIsBookmarked(!newBookmarkedState);
+    } finally {
+      setIsBookmarking(false);
+    }
+  };
 
   // CREATE THE LIKE HANDLER
   const handleLike = async () => {
@@ -143,9 +170,13 @@ export const PostCard = ({ post, priority = false }: PostCardProps) => {
             </div>
 
             {/* Save Button */}
-            <button>
+            <button
+              onClick={handleSave}
+              disabled={isBookmarking}
+              className='active:scale-125 transition-transform'
+            >
               <Bookmark
-                className={`w-6 h-6 transition-colors ${isSaved ? 'fill-base-white text-base-white' : 'text-base-white hover:text-neutral-300'}`}
+                className={`w-6 h-6 transition-colors ${isBookmarked ? 'fill-base-white text-base-white' : 'text-base-white hover:text-neutral-300'}`}
               />
             </button>
           </div>
