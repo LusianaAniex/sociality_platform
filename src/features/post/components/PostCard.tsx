@@ -17,6 +17,7 @@ import {
 import { axiosInstance } from '@/lib/axios';
 import { Post, PostCardProps } from '@/features/post/types';
 import { CommentSection } from '@/features/post/components/CommentSection';
+import { LikesModal } from '@/features/post/components/LikesModal';
 
 // Setup Day.js to show "2 hours ago"
 dayjs.extend(relativeTime);
@@ -40,7 +41,8 @@ export const PostCard = ({ post, priority = false }: PostCardProps) => {
   const [likesCount, setLikesCount] = useState(post.likeCount);
   const [isLiking, setIsLiking] = useState(false); // To prevent spam-clicking
 
-  // ADD STATE FOR COMMENT MODAL (Mobile only)
+  // ADD STATE FOR MODALS
+  const [isLikesModalOpen, setIsLikesModalOpen] = useState(false);
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
 
   // Check for desktop view
@@ -148,7 +150,14 @@ export const PostCard = ({ post, priority = false }: PostCardProps) => {
                 <Heart
                   className={`w-6 h-6 transition-colors ${isLiked ? 'fill-accent-red text-accent-red' : 'text-base-white group-hover:text-accent-red'}`}
                 />
-                <span className='text-body-sm font-semibold'>{likesCount}</span>
+              </button>
+
+              {/* Likes Count - Opens Modal */}
+              <button
+                onClick={() => setIsLikesModalOpen(true)}
+                className='text-body-sm font-semibold hover:text-neutral-300 transition-colors'
+              >
+                {likesCount} {likesCount === 1 ? 'like' : 'likes'}
               </button>
 
               {/* Comment Button - Opens modal on both mobile and desktop */}
@@ -217,6 +226,14 @@ export const PostCard = ({ post, priority = false }: PostCardProps) => {
             onClose={() => setIsCommentModalOpen(false)}
           />
         ))}
+
+      {isLikesModalOpen && (
+        <LikesModal
+          postId={post.id}
+          isOpen={isLikesModalOpen}
+          onClose={() => setIsLikesModalOpen(false)}
+        />
+      )}
     </>
   );
 };

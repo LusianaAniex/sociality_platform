@@ -6,32 +6,46 @@ const BASE_URL =
 
 async function testEndpoints() {
   try {
-    console.log('Refining Saved Post Endpoint Probe 2...');
-    let username = 'testuser';
+    console.log('Probing Likes and Follow Endpoints...');
+
+    // 1. Get a valid post ID and User ID first
+    let postId = '';
+    let targetUsername = '';
 
     try {
       const feed = await axios.get(`${BASE_URL}/posts?limit=1`);
-      if (feed.data?.data?.data?.[0]?.author?.username) {
-        username = feed.data.data.data[0].author.username;
+      if (feed.data?.data?.data?.[0]) {
+        postId = feed.data.data.data[0].id;
+        targetUsername = feed.data.data.data[0].author.username;
+        console.log('Using Post ID:', postId);
+        console.log('Using Target Username:', targetUsername);
       }
-      console.log('Using username:', username);
     } catch (e) {
-      console.log('Failed to get username, using default:', username);
+      console.log('Failed to fetch feed for setup.');
+    }
+
+    if (!postId) {
+      console.log('No post ID found, cannot probe likes.');
+      return;
     }
 
     const endpoints = [
-      { method: 'GET', url: `/posts?type=saved` },
-      { method: 'GET', url: `/posts?isSaved=true` },
-      { method: 'GET', url: `/users/${username}/bookmarks` },
-      { method: 'GET', url: `/bookmarks` },
-      { method: 'GET', url: `/saved` },
-      { method: 'GET', url: `/me/saved` },
+      // Likes
+      { method: 'GET', url: `/posts/${postId}/likes` },
+      { method: 'GET', url: `/posts/${postId}/liked_by` },
+      { method: 'GET', url: `/likes?postId=${postId}` },
+
+      // Follow
+      { method: 'POST', url: `/users/${targetUsername}/follow` },
+      { method: 'DELETE', url: `/users/${targetUsername}/unfollow` }, // Guessing
+      { method: 'DELETE', url: `/users/${targetUsername}/follow` }, // Guessing
     ];
 
     let logOutput = '';
 
     for (const ep of endpoints) {
       logOutput += `\n\nTrying: ${ep.method} ${ep.url}\n`;
+      console.log(`Trying: ${ep.method} ${ep.url}`);
       try {
         const response = await axios({
           method: ep.method,
@@ -39,16 +53,20 @@ async function testEndpoints() {
           validateStatus: () => true,
         });
         logOutput += `Status: ${response.status}\n`;
+        console.log(`Status: ${response.status}`);
         if (response.status !== 404) {
-          logOutput += `Data Preview: ${JSON.stringify(response.data).substring(0, 200)}\n`;
+          const dataPreview = JSON.stringify(response.data).substring(0, 500);
+          logOutput += `Data: ${dataPreview}\n`;
+          console.log(`Data: ${dataPreview}`);
         }
       } catch (error: any) {
         logOutput += `Error: ${error.message}\n`;
+        console.log(`Error: ${error.message}`);
       }
     }
 
-    fs.writeFileSync('saved-posts-debug-2.txt', logOutput);
-    console.log('Log written to saved-posts-debug-2.txt');
+    fs.writeFileSync('likes-debug.txt', logOutput);
+    console.log('Log written to likes-debug.txt');
   } catch (error) {
     console.error('Fatal error:', error);
   }

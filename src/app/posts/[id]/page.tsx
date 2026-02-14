@@ -20,6 +20,7 @@ import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { CommentSection } from '@/features/post/components/CommentSection';
+import { LikesModal } from '@/features/post/components/LikesModal';
 import { axiosInstance } from '@/lib/axios';
 import { toast } from 'sonner';
 import { Post } from '@/features/post/types';
@@ -35,6 +36,8 @@ export default function PostDetailPage() {
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const [isLiking, setIsLiking] = useState(false);
+
+  const [isLikesModalOpen, setIsLikesModalOpen] = useState(false);
 
   // Comment Logic
   const queryClient = useQueryClient();
@@ -292,9 +295,12 @@ export default function PostDetailPage() {
                   <Heart
                     className={`w-6 h-6 transition-colors ${isLiked ? 'fill-red-500 text-red-500' : 'text-white group-hover:text-neutral-400'}`}
                   />
-                  {likesCount > 0 && (
-                    <span className='text-sm font-semibold'>{likesCount}</span>
-                  )}
+                </button>
+                <button
+                  onClick={() => setIsLikesModalOpen(true)}
+                  className='text-sm font-semibold hover:text-neutral-300 transition-colors'
+                >
+                  {likesCount} {likesCount === 1 ? 'like' : 'likes'}
                 </button>
                 <button className='group flex items-center gap-1.5'>
                   <MessageCircle className='w-6 h-6 text-white group-hover:text-neutral-400 transform -scale-x-100' />
@@ -380,12 +386,19 @@ export default function PostDetailPage() {
         {/* Action Icons */}
         <div className='flex items-center justify-between p-4'>
           <div className='flex items-center gap-4'>
-            <button onClick={handleLike} className='flex items-center gap-1'>
-              <Heart
-                className={`w-6 h-6 ${isLiked ? 'fill-red-500 text-red-500' : 'text-white'}`}
-              />
-              <span className='text-sm font-semibold'>{likesCount}</span>
-            </button>
+            <div className='flex items-center gap-1'>
+              <button onClick={handleLike}>
+                <Heart
+                  className={`w-6 h-6 ${isLiked ? 'fill-red-500 text-red-500' : 'text-white'}`}
+                />
+              </button>
+              <button
+                onClick={() => setIsLikesModalOpen(true)}
+                className='text-sm font-semibold'
+              >
+                {likesCount}
+              </button>
+            </div>
             <button className='flex items-center gap-1'>
               <MessageCircle className='w-6 h-6 text-white' />
               <span className='text-sm font-semibold'>{post.commentCount}</span>
@@ -461,6 +474,14 @@ export default function PostDetailPage() {
         {/* Add padding at bottom for mobile to account for fixed input */}
         <div className='h-20' />
       </div>
+
+      {isLikesModalOpen && post && (
+        <LikesModal
+          postId={post.id}
+          isOpen={isLikesModalOpen}
+          onClose={() => setIsLikesModalOpen(false)}
+        />
+      )}
     </div>
   );
 }
