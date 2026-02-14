@@ -340,6 +340,7 @@ export default function PostDetailPage() {
             alt={post.caption || 'Post image'}
             fill
             className='object-cover'
+            sizes='100vw'
           />
         </div>
 
@@ -378,7 +379,7 @@ export default function PostDetailPage() {
         <div className='px-4'>
           <CommentSection
             postId={post.id}
-            variant='mobile'
+            variant='inline'
             isOpen={true}
             hideInput={true}
           />

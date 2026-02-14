@@ -93,15 +93,18 @@ export const PostCard = ({ post, priority = false }: PostCardProps) => {
 
         {/* BODY: Image & Caption */}
         <CardContent className='p-0'>
-          <div className='relative aspect-square w-full bg-neutral-900 overflow-hidden'>
-            <Image
-              src={post.imageUrl}
-              alt={post.caption || 'Post image'}
-              fill
-              className='object-cover'
-              priority={priority}
-            />
-          </div>
+          <Link href={`/posts/${post.id}`}>
+            <div className='relative aspect-square w-full bg-neutral-900 overflow-hidden cursor-pointer'>
+              <Image
+                src={post.imageUrl}
+                alt={post.caption || 'Post image'}
+                fill
+                className='object-cover'
+                priority={priority}
+                sizes='(max-width: 768px) 100vw, 500px'
+              />
+            </div>
+          </Link>
         </CardContent>
 
         {/* FOOTER: Actions & Caption */}
