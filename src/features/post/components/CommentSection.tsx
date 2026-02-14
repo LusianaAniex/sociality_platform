@@ -522,6 +522,7 @@ export const CommentSection = ({
     <Dialog open={internalOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className='max-w-[calc(100vw-60px)] h-[calc(100vh-60px)] p-0 gap-0 bg-black border-neutral-800 overflow-hidden flex flex-row shadow-2xl outline-none sm:rounded-none md:rounded-r-lg'
+        /* ... existing styles ... */
         style={{
           width: '1200px',
           maxWidth: '95vw',
@@ -530,9 +531,13 @@ export const CommentSection = ({
         }}
         showCloseButton={true}
         closeButtonClassName='right-4 top-4 z-50 text-white bg-black/50 p-1 rounded-full hover:bg-black/80'
+        aria-describedby='comment-dialog-description'
       >
         <DialogHeader className='sr-only'>
           <DialogTitle>Post Detail</DialogTitle>
+          <DialogDescription id='comment-dialog-description'>
+            Detailed view of the post and its comments
+          </DialogDescription>
         </DialogHeader>
 
         {/* LEFT: IMAGE */}

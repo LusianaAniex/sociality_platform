@@ -15,8 +15,10 @@ export const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     // Don't attach token to auth endpoints (login/register)
-    const isAuthEndpoint = config.url?.includes('/auth/login') || config.url?.includes('/auth/register');
-    
+    const isAuthEndpoint =
+      config.url?.includes('/auth/login') ||
+      config.url?.includes('/auth/register');
+
     if (!isAuthEndpoint) {
       const token = localStorage.getItem('token');
 

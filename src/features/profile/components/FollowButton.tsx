@@ -6,15 +6,18 @@ import { axiosInstance } from '@/lib/axios'; // Ensure this path is correct
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { useAppSelector } from '@/hooks/useRedux';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface FollowButtonProps {
-  username: string;
+  userId: string | number;
+  username: string; // Used for the API endpoint
   initialIsFollowing: boolean;
   onFollowChange?: (isFollowing: boolean) => void;
-  className?: string; // Allow custom styling
+  className?: string;
 }
 
 export function FollowButton({
+  userId,
   username,
   initialIsFollowing,
   onFollowChange,
@@ -23,14 +26,15 @@ export function FollowButton({
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [isLoading, setIsLoading] = useState(false);
   const { user: currentUser } = useAppSelector((state) => state.auth);
+  const queryClient = useQueryClient();
 
-  const isSelf = currentUser?.username === username;
+  const isSelf =
+    currentUser?.username === username || currentUser?.id === userId;
 
   const handleFollowToggle = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent parent click events (like navigating to profile)
-    if (isLoading) return;
+    e.stopPropagation();
+    if (isLoading || !username) return;
 
-    // Optimistic update
     const newIsFollowing = !isFollowing;
     setIsFollowing(newIsFollowing);
     setIsLoading(true);
@@ -41,22 +45,44 @@ export function FollowButton({
 
     try {
       if (newIsFollowing) {
-        await axiosInstance.post(`/users/${username}/follow`);
+        // Follow endpoint
+        await axiosInstance.post(`/follow/${username}`);
       } else {
-        await axiosInstance.delete(`/users/${username}/unfollow`);
+        // Unfollow endpoint
+        await axiosInstance.delete(`/follow/${username}`);
       }
-    } catch (error) {
+
+      toast.success(
+        newIsFollowing ? `Followed @${username}` : `Unfollowed @${username}`
+      );
+    } catch (error: any) {
       console.error('Failed to toggle follow:', error);
+
+      // Better error logging
+      if (error.response) {
+        console.error('Status:', error.response.status);
+        console.error('Data:', error.response.data);
+        console.error('URL:', error.config?.url);
+        console.error('Method:', error.config?.method);
+      }
+
       // Revert on error
       setIsFollowing(!newIsFollowing);
       if (onFollowChange) {
         onFollowChange(!newIsFollowing);
       }
-      toast.error(
-        newIsFollowing ? 'Failed to follow user' : 'Failed to unfollow user'
-      );
+
+      // Show more specific error message if available
+      const errorMessage =
+        error.response?.data?.message ||
+        (newIsFollowing ? 'Failed to follow user' : 'Failed to unfollow user');
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
+      // Invalidate queries to update profile page counts/status
+      queryClient.invalidateQueries({ queryKey: ['profile', username] });
+      // Also invalidate feed to show new posts from followed users
+      queryClient.invalidateQueries({ queryKey: ['feed'] });
     }
   };
 
@@ -66,7 +92,7 @@ export function FollowButton({
     <Button
       onClick={handleFollowToggle}
       disabled={isLoading}
-      variant={isFollowing ? 'secondary' : 'default'} // 'secondary' usually gray/outline-ish, 'default' primary color
+      variant={isFollowing ? 'secondary' : 'default'}
       className={`rounded-full px-4 h-8 text-xs font-semibold ${
         isFollowing
           ? 'bg-transparent border border-neutral-700 text-white hover:bg-neutral-800'

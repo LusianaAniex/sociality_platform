@@ -7,64 +7,44 @@ export const useFeed = () => {
     queryKey: ['feed'],
     queryFn: async ({ pageParam = 1 }): Promise<FeedResponse> => {
       try {
-        // Fetch data
-        const response = await axiosInstance.get(`/feed`, {
-          params: { page: pageParam },
+        // ✅ USE THE WORKING ENDPOINT from your probe
+        // ✅ USE THE WORKING ENDPOINT confirmed by debug page
+        const response = await axiosInstance.get(`/posts`, {
+          params: {
+            page: pageParam,
+            limit: 20,
+            type: 'following',
+          },
         });
 
-        // 2. MAPPING (Crucial Step)
         console.log('=== FEED API DEBUG ===');
-        console.log('Full Response:', response);
         console.log('Response Status:', response.status);
         console.log('Response Data:', response.data);
-        console.log('Response Data Type:', typeof response.data);
-        console.log(
-          'Response Data Keys:',
-          response.data ? Object.keys(response.data) : 'no data'
-        );
 
-        // Backend structure: { success: true, message: 'OK', data: { items: [...], pagination: {...} } }
+        // Your API returns { success: true, message: 'OK', data: { posts: [...], pagination: {...} } }
         const backendData = response.data.data;
 
-        console.log('Backend Data:', backendData);
-        console.log('Backend Data Type:', typeof backendData);
-        console.log(
-          'Backend Data Keys:',
-          backendData ? Object.keys(backendData) : 'no backend data'
-        );
-        console.log('Backend Items:', backendData?.items);
-        console.log('Backend Pagination:', backendData?.pagination);
-        console.log('=====================');
-
-        if (!backendData || !backendData.items || !backendData.pagination) {
-          console.error('Unexpected API response structure:', response.data);
-          console.error(
-            'Expected: { data: { items: [...], pagination: {...} } }'
-          );
-          console.error('Got:', JSON.stringify(response.data, null, 2));
-          throw new Error('Invalid feed data structure received from server');
-        }
+        // The posts are in 'posts' array, not 'items'
+        const posts = backendData.posts || []; // Changed from posts || items
+        const pagination = backendData.pagination || {
+          page: pageParam,
+          limit: 20,
+          total: posts.length,
+          totalPages: 1,
+        };
 
         return {
-          items: backendData.items, // Backend already has 'items'
+          items: posts, // Keep as 'items' for your component
           pagination: {
-            page: backendData.pagination.page,
-            limit: backendData.pagination.limit,
-            total: backendData.pagination.total,
-            totalPages: backendData.pagination.totalPages,
-            lastPage: backendData.pagination.totalPages, // Same as totalPages for compatibility
+            page: pagination.page || pageParam,
+            limit: pagination.limit || 20,
+            total: pagination.total || posts.length,
+            totalPages: pagination.totalPages || 1,
+            lastPage: pagination.totalPages || 1,
           },
         };
       } catch (error) {
-        console.error('=== FEED API ERROR ===');
-        console.error('Error:', error);
-        if (error && typeof error === 'object' && 'response' in error) {
-          const axiosError = error as any;
-          console.error('Axios Error Response:', axiosError.response);
-          console.error('Axios Error Status:', axiosError.response?.status);
-          console.error('Axios Error Data:', axiosError.response?.data);
-        }
-        console.error('=====================');
+        console.error('=== FEED API ERROR ===', error);
         throw error;
       }
     },

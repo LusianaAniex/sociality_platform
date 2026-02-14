@@ -145,6 +145,7 @@ export function LikesModal({ postId, isOpen, onClose }: LikesModalProps) {
                 </Link>
 
                 <FollowButton
+                  userId={user.id}
                   username={user.username}
                   initialIsFollowing={user.isFollowing ?? false}
                 />

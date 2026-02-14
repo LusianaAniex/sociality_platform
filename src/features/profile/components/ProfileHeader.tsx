@@ -4,6 +4,7 @@ import { UserProfile } from '../types';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { FollowButton } from './FollowButton';
 import { useState, useEffect } from 'react';
 
 interface ProfileHeaderProps {
@@ -33,29 +34,6 @@ export default function ProfileHeader({
   useEffect(() => {
     console.log('ProfileHeader received profile:', profile);
   }, [profile]);
-
-  const handleFollowToggle = async () => {
-    // Optimistic update
-    const newIsFollowing = !isFollowing;
-    setIsFollowing(newIsFollowing);
-
-    // Update follower count based on action
-    if (newIsFollowing) {
-      setFollowerCount((prev) => prev + 1);
-    } else {
-      setFollowerCount((prev) => Math.max(0, prev - 1)); // Prevent negative count
-    }
-
-    try {
-      // API call placeholder - Replace with actual mutation
-      // await followUserMutation.mutateAsync(profile.id);
-    } catch (error) {
-      // Revert on error
-      setIsFollowing(!newIsFollowing);
-      setFollowerCount((prev) => (newIsFollowing ? prev - 1 : prev + 1));
-      console.error('Failed to update follow status:', error);
-    }
-  };
 
   // If profile is null or undefined, show nothing or a loading state
   if (!profile) {
@@ -138,12 +116,20 @@ export default function ProfileHeader({
               </Button>
             </Link>
           ) : (
-            <Button
-              onClick={handleFollowToggle}
-              className={`flex-1 rounded-lg h-9 ${isFollowing ? 'bg-neutral-800 text-white' : 'bg-primary-200 text-base-white hover:bg-primary-300'}`}
-            >
-              {isFollowing ? 'Following' : 'Follow'}
-            </Button>
+            <FollowButton
+              userId={profile.id}
+              username={profile.username}
+              initialIsFollowing={isFollowing}
+              onFollowChange={(newIsFollowing) => {
+                setIsFollowing(newIsFollowing);
+                if (newIsFollowing) {
+                  setFollowerCount((prev) => prev + 1);
+                } else {
+                  setFollowerCount((prev) => Math.max(0, prev - 1));
+                }
+              }}
+              className='flex-1 h-9'
+            />
           )}
           <Button
             variant='outline'
@@ -225,12 +211,20 @@ export default function ProfileHeader({
                   </Button>
                 </Link>
               ) : (
-                <Button
-                  onClick={handleFollowToggle}
-                  className={`rounded-full px-6 ${isFollowing ? 'bg-neutral-800 text-white' : 'bg-primary-200 text-base-white hover:bg-primary-300'}`}
-                >
-                  {isFollowing ? 'Following' : 'Follow'}
-                </Button>
+                <FollowButton
+                  userId={profile.id}
+                  username={profile.username}
+                  initialIsFollowing={isFollowing}
+                  onFollowChange={(newIsFollowing) => {
+                    setIsFollowing(newIsFollowing);
+                    if (newIsFollowing) {
+                      setFollowerCount((prev) => prev + 1);
+                    } else {
+                      setFollowerCount((prev) => Math.max(0, prev - 1));
+                    }
+                  }}
+                  className='px-6 rounded-full'
+                />
               )}
               <Button
                 variant='outline'
