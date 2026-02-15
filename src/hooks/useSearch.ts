@@ -1,4 +1,3 @@
-// In your useSearch hook, add debouncing
 import { useState, useEffect } from 'react';
 import debounce from 'lodash/debounce';
 import { axiosInstance } from '@/lib/axios';
@@ -21,11 +20,8 @@ export const useSearch = () => {
           params: { q: query, limit: 10 },
         });
 
-        // Validated structure from debug script:
-        // { success: true, message: 'OK', data: { users: [...], pagination: {...} } }
-        const backendData = response.data?.data;
-        const users = backendData?.users || [];
-
+        // Extract users from the nested response structure
+        const users = response.data?.data?.users || [];
         setResults(users);
       } catch (error) {
         console.error('Search failed:', error);
