@@ -7,14 +7,10 @@ const fetchExploreFeed = async ({ pageParam = 1 }) => {
   try {
     // Try using /posts endpoint to get all public posts
     const response = await axiosInstance.get(`/posts?page=${pageParam}`);
-    console.log('Explore Full API Response:', response);
-    console.log('Explore response.data:', response.data);
-    console.log('Explore response.data.data:', response.data.data);
 
     // Backend returns: { success: true, message: 'OK', data: { data: Post[], meta: {...} } }
     // We return response.data.data to match the feed hook pattern
     const result = response.data.data;
-    console.log('Explore parsed result:', result);
 
     // Transform to match expected structure if needed
     if (result && Array.isArray(result.data)) {

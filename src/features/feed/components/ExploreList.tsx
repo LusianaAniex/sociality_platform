@@ -45,39 +45,28 @@ export const ExploreList = () => {
     );
   }
 
-  // Debug: Log the actual data structure to see what we're getting
-  console.log('Full data object:', data);
-  console.log('Pages:', data?.pages);
-
   // Try different ways to access the posts based on common API response structures
   const posts =
     data?.pages
       .flatMap((page) => {
         // Check for different possible data structures
         if (page?.items) {
-          console.log('Found items array:', page.items);
           return page.items;
         } else if ((page as any)?.posts) {
-          console.log('Found posts array:', (page as any).posts);
           return (page as any).posts;
         } else if (Array.isArray(page)) {
-          console.log('Page is an array:', page);
           return page;
         } else if ((page as any)?.data) {
-          console.log('Found data array:', (page as any).data);
           return (page as any).data;
         } else if ((page as any)?.results) {
-          console.log('Found results array:', (page as any).results);
           return (page as any).results;
         } else {
           // If none of the above, log the page structure to help debug
-          console.log('Unknown page structure:', page);
+
           return [];
         }
       })
       .filter((post) => post && post.id) || []; // Ensure we have valid posts with IDs
-
-  console.log('Final posts array:', posts);
 
   if (posts.length === 0) {
     return (

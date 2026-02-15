@@ -17,10 +17,6 @@ export const useFeed = () => {
           },
         });
 
-        console.log('=== FEED API DEBUG ===');
-        console.log('Response Status:', response.status);
-        console.log('Response Data:', response.data);
-
         // Your API returns { success: true, message: 'OK', data: { posts: [...], pagination: {...} } }
         const backendData = response.data.data;
 

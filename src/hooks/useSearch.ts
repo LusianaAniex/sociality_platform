@@ -17,12 +17,9 @@ export const useSearch = () => {
     const debouncedSearch = debounce(async () => {
       setIsLoading(true);
       try {
-        console.log('Searching for:', query);
         const response = await axiosInstance.get('/users/search', {
           params: { q: query, limit: 10 },
         });
-
-        console.log('Search API Response:', response.data);
 
         // Validated structure from debug script:
         // { success: true, message: 'OK', data: { users: [...], pagination: {...} } }

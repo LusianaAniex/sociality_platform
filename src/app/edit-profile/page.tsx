@@ -101,9 +101,8 @@ export default function EditProfilePage() {
       // Assuming PATCH /users/{username} since GET uses username
       // Use the current username from the stored user object, not the form value (which might be changing)
       // Attempt PATCH /me (resolves to /api/me)
-      console.log('Attempting to update profile at PATCH /api/me');
+
       const response = await axiosInstance.patch('/me', payload);
-      console.log('Update response:', response);
 
       // Update Redux State
       // We merge the new values into the existing user object

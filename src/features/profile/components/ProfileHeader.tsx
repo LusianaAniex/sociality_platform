@@ -31,11 +31,6 @@ export default function ProfileHeader({
     }
   }, [profile]);
 
-  // Debug: Log the profile data
-  useEffect(() => {
-    console.log('ProfileHeader received profile:', profile);
-  }, [profile]);
-
   // If profile is null or undefined, show nothing or a loading state
   if (!profile) {
     return <div>Loading profile...</div>;
@@ -109,7 +104,7 @@ export default function ProfileHeader({
         <div className='flex gap-2 mb-6'>
           {isCurrentUser ? (
             <Link href='/edit-profile' className='flex-1'>
-              <Button className='w-full bg-[#8B5CF6] hover:bg-[#7C3AED] text-white rounded-lg h-9 shadow-[0_0_15px_rgba(139,92,246,0.5)] hover:shadow-[0_0_20px_rgba(139,92,246,0.7)] transition-all duration-300'>
+              <Button className='w-full bg-black hover:bg-primary-300 text-white border border-neutral-800 rounded-full h-9 shadow-[0_0_15px_rgba(139,92,246,0.5)] hover:shadow-[0_0_50px_rgba(139,92,246,0.9)] transition-all duration-300'>
                 Edit Profile
               </Button>
             </Link>
@@ -180,7 +175,7 @@ export default function ProfileHeader({
             <div className='flex gap-3'>
               {isCurrentUser ? (
                 <Link href='/edit-profile'>
-                  <Button className='bg-[#8B5CF6] hover:bg-[#7C3AED] text-white rounded-full px-6 shadow-[0_0_15px_rgba(139,92,246,0.5)] hover:shadow-[0_0_25px_rgba(139,92,246,0.8)] transition-all duration-300'>
+                  <Button className='bg-black hover:bg-primary-300 text-white rounded-full px-6 shadow-[0_0_15px_rgba(139,92,246,0.5)] hover:shadow-[0_0_50px_rgba(139,92,246,0.9)] transition-all duration-300'>
                     Edit Profile
                   </Button>
                 </Link>

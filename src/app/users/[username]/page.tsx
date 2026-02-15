@@ -23,8 +23,6 @@ export default function ProfilePage() {
   const { user: currentUser, token } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
 
-  console.log('Username from params:', username); // Debug log
-
   const isCurrentUser =
     currentUser?.username?.toLowerCase() === username?.toLowerCase();
 
@@ -38,11 +36,9 @@ export default function ProfilePage() {
   } = useQuery<UserProfile>({
     queryKey: ['profile', username],
     queryFn: async () => {
-      console.log('Fetching profile for:', username); // Debug log
       try {
         // Try the first endpoint that might work based on your backend
         const response = await axiosInstance.get(`/users/${username}`);
-        console.log('Profile API response:', response); // Debug log
 
         // Handle nested data structures common in backends
         if (response.data && response.data.data) {
@@ -69,7 +65,6 @@ export default function ProfilePage() {
       const currentAvatar = currentUser.avatar;
 
       if (profileAvatar && profileAvatar !== currentAvatar) {
-        console.log('Syncing updated profile to Redux store');
         dispatch(
           setCredentials({
             user: {
@@ -92,20 +87,19 @@ export default function ProfilePage() {
   } = useQuery<FeedResponse>({
     queryKey: ['profile-posts', username, activeTab],
     queryFn: async () => {
-      console.log(`Fetching ${activeTab} for:`, username);
       try {
         if (activeTab === 'saved') {
           // Only current user can see their saved posts usually
           // Adjust endpoint based on what we found (api/me/saved was 401 which implies it exists)
           // But we can try the endpoint we probed
           const response = await axiosInstance.get('/me/saved');
-          console.log('Saved posts response:', response);
+
           return response.data;
         }
 
         // Default: Gallery (User's posts)
         const { data } = await axiosInstance.get(`/users/${username}/posts`);
-        console.log('Posts data received:', data); // Debug log
+
         return data;
       } catch (error) {
         console.error('Posts fetch error:', error);
@@ -159,7 +153,6 @@ export default function ProfilePage() {
   }
 
   if (!profile) {
-    console.log('Profile not found for username:', username); // Debug log
     return (
       <div className='text-center py-20 text-white'>
         <h2 className='text-2xl font-bold mb-2'>User not found</h2>
