@@ -15,7 +15,8 @@ interface ProfileHeaderProps {
 export default function ProfileHeader({
   profile,
   isCurrentUser,
-}: ProfileHeaderProps) {
+  totalLikes = 0,
+}: ProfileHeaderProps & { totalLikes?: number }) {
   // Initialize follower count state
   const [isFollowing, setIsFollowing] = useState(profile?.isFollowing ?? false);
   const [followerCount, setFollowerCount] = useState(
@@ -108,10 +109,7 @@ export default function ProfileHeader({
         <div className='flex gap-2 mb-6'>
           {isCurrentUser ? (
             <Link href='/edit-profile' className='flex-1'>
-              <Button
-                variant='outline'
-                className='w-full border-neutral-700 text-white hover:bg-neutral-800 rounded-lg h-9'
-              >
+              <Button className='w-full bg-[#8B5CF6] hover:bg-[#7C3AED] text-white rounded-lg h-9 shadow-[0_0_15px_rgba(139,92,246,0.5)] hover:shadow-[0_0_20px_rgba(139,92,246,0.7)] transition-all duration-300'>
                 Edit Profile
               </Button>
             </Link>
@@ -131,27 +129,6 @@ export default function ProfileHeader({
               className='flex-1 h-9'
             />
           )}
-          <Button
-            variant='outline'
-            size='icon'
-            className='w-9 h-9 border-neutral-700 text-white hover:bg-neutral-800 rounded-lg'
-          >
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              width='18'
-              height='18'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeWidth='2'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              className='lucide lucide-send'
-            >
-              <path d='m22 2-7 20-4-9-9-4Z' />
-              <path d='M22 2 11 13' />
-            </svg>
-          </Button>
         </div>
 
         {/* Mobile Stats (Evenly Spaced) */}
@@ -160,7 +137,7 @@ export default function ProfileHeader({
             <div className='font-bold text-lg text-white'>
               {displayPostCount}
             </div>
-            <div className='text-xs text-neutral-400'>Post</div>
+            <div className='text-xs text-neutral-400'>Posts</div>
           </div>
           <div className='text-center'>
             <div className='font-bold text-lg text-white'>{followerCount}</div>
@@ -174,7 +151,7 @@ export default function ProfileHeader({
           </div>
           {/* Added Likes stats based on design */}
           <div className='text-center'>
-            <div className='font-bold text-lg text-white'>567</div>
+            <div className='font-bold text-lg text-white'>{totalLikes}</div>
             <div className='text-xs text-neutral-400'>Likes</div>
           </div>
         </div>
@@ -203,10 +180,7 @@ export default function ProfileHeader({
             <div className='flex gap-3'>
               {isCurrentUser ? (
                 <Link href='/edit-profile'>
-                  <Button
-                    variant='outline'
-                    className='border-neutral-700 text-white hover:bg-neutral-800 rounded-full px-6'
-                  >
+                  <Button className='bg-[#8B5CF6] hover:bg-[#7C3AED] text-white rounded-full px-6 shadow-[0_0_15px_rgba(139,92,246,0.5)] hover:shadow-[0_0_25px_rgba(139,92,246,0.8)] transition-all duration-300'>
                     Edit Profile
                   </Button>
                 </Link>
@@ -226,27 +200,6 @@ export default function ProfileHeader({
                   className='px-6 rounded-full'
                 />
               )}
-              <Button
-                variant='outline'
-                size='icon'
-                className='rounded-full w-10 h-10 border-neutral-700 text-white hover:bg-neutral-800'
-              >
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  width='18'
-                  height='18'
-                  viewBox='0 0 24 24'
-                  fill='none'
-                  stroke='currentColor'
-                  strokeWidth='2'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  className='lucide lucide-send'
-                >
-                  <path d='m22 2-7 20-4-9-9-4Z' />
-                  <path d='M22 2 11 13' />
-                </svg>
-              </Button>
             </div>
           </div>
 
@@ -273,7 +226,7 @@ export default function ProfileHeader({
               <div className='font-bold text-xl text-white'>
                 {displayPostCount}
               </div>
-              <div className='text-sm text-neutral-400'>Post</div>
+              <div className='text-sm text-neutral-400'>Posts</div>
             </div>
             <div className='text-center'>
               <div className='font-bold text-xl text-white'>
@@ -288,7 +241,7 @@ export default function ProfileHeader({
               <div className='text-sm text-neutral-400'>Following</div>
             </div>
             <div className='text-center'>
-              <div className='font-bold text-xl text-white'>567</div>
+              <div className='font-bold text-xl text-white'>{totalLikes}</div>
               <div className='text-sm text-neutral-400'>Likes</div>
             </div>
           </div>

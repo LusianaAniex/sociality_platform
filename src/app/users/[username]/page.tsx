@@ -168,10 +168,20 @@ export default function ProfilePage() {
     );
   }
 
+  // Calculate total likes from posts
+  const totalLikes = posts.reduce(
+    (sum, post) => sum + (post.likeCount || 0),
+    0
+  );
+
   return (
     <main className='max-w-4xl mx-auto py-4 px-4 pb-20 md:py-8'>
       {/* 1. Header Section */}
-      <ProfileHeader profile={profile} isCurrentUser={isCurrentUser} />
+      <ProfileHeader
+        profile={profile}
+        isCurrentUser={isCurrentUser}
+        totalLikes={totalLikes}
+      />
 
       {/* 2. Tabs (Gallery vs Saved) */}
       <div className='flex border-t border-neutral-800 mb-1'>
