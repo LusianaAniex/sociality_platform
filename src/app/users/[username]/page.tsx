@@ -27,7 +27,9 @@ export default function ProfilePage() {
   const isCurrentUser =
     currentUser?.username?.toLowerCase() === username?.toLowerCase();
 
-  const [activeTab, setActiveTab] = useState<'gallery' | 'saved'>('gallery');
+  const [activeTab, setActiveTab] = useState<'gallery' | 'saved' | 'likes'>(
+    'gallery'
+  );
 
   // 1. Fetch Profile Info - FIXED ENDPOINT
   const {
@@ -91,11 +93,28 @@ export default function ProfilePage() {
       try {
         if (activeTab === 'saved') {
           // Only current user can see their saved posts usually
-          // Adjust endpoint based on what we found (api/me/saved was 401 which implies it exists)
-          // But we can try the endpoint we probed
           const response = await axiosInstance.get('/me/saved');
-
           return response.data;
+        }
+
+        if (activeTab === 'likes') {
+          // Fetch liked posts
+          // Try /users/:username/likes or /users/:username/posts?type=liked
+          // Assuming a dedicated endpoint or query param based on typical patterns
+          // If direct endpoint doesn't exist, we might need to fallback to filtered posts
+          try {
+            const response = await axiosInstance.get(
+              `/users/${username}/likes`
+            );
+            return response.data;
+          } catch (e) {
+            // Fallback: try posts with type=liked if the above fails
+            console.warn('Failed to fetch /likes, trying /posts?type=liked');
+            const response = await axiosInstance.get(
+              `/users/${username}/posts?type=liked`
+            );
+            return response.data;
+          }
         }
 
         // Default: Gallery (User's posts)
@@ -181,7 +200,7 @@ export default function ProfilePage() {
         totalLikes={totalLikes}
       />
 
-      {/* 2. Tabs (Gallery vs Saved) */}
+      {/* 2. Tabs (Gallery vs Saved vs Likes) */}
       <div className='flex border-t border-neutral-800 mb-1'>
         <button
           onClick={() => setActiveTab('gallery')}
@@ -192,6 +211,32 @@ export default function ProfilePage() {
             Gallery
           </span>
         </button>
+
+        {/* Likes Tab - Available for everyone or just self? Usually public unless private profile. */}
+        <button
+          onClick={() => setActiveTab('likes')}
+          className={`flex-1 flex items-center justify-center gap-2 py-3 transition-colors ${activeTab === 'likes' ? 'border-b-2 border-white text-white' : 'text-neutral-500 hover:text-white'}`}
+        >
+          {/* Heart Icon for Likes */}
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            width='16'
+            height='16'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='2'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            className='lucide lucide-heart w-4 h-4'
+          >
+            <path d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z' />
+          </svg>
+          <span className='text-xs font-semibold uppercase tracking-wider'>
+            Likes
+          </span>
+        </button>
+
         {isCurrentUser && (
           <button
             onClick={() => setActiveTab('saved')}
@@ -239,12 +284,18 @@ export default function ProfilePage() {
             <div className='col-span-3 flex flex-col items-center justify-center py-16 text-center px-4'>
               <div className='mb-6'>
                 <h3 className='text-lg font-bold text-white mb-2'>
-                  {activeTab === 'saved' ? 'No saved posts' : 'No posts yet'}
+                  {activeTab === 'saved'
+                    ? 'No saved posts'
+                    : activeTab === 'likes'
+                      ? 'No liked posts'
+                      : 'No posts yet'}
                 </h3>
                 <p className='text-neutral-400 text-sm max-w-[280px] mx-auto leading-relaxed'>
                   {activeTab === 'saved'
                     ? 'Posts you save will appear here.'
-                    : `@${username} hasn't shared any posts yet.`}
+                    : activeTab === 'likes'
+                      ? 'Posts you like will appear here.'
+                      : `@${username} hasn't shared any posts yet.`}
                 </p>
               </div>
             </div>

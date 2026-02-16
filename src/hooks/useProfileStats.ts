@@ -8,10 +8,15 @@ interface ProfileStats {
   likesCount: number;
 }
 
-interface ApiResponse {
+interface ApiResponse<T = unknown> {
   success: boolean;
   message: string;
-  data: any;
+  data: T;
+}
+
+interface PostWithLikes {
+  likeCount?: number;
+  [key: string]: unknown;
 }
 
 export function useProfileStats(username: string, isEnabled: boolean = true) {
@@ -65,7 +70,10 @@ export function useProfileStats(username: string, isEnabled: boolean = true) {
             // Strategy 5: Check ANY key that holds an array (fallback)
             if (typeof data === 'object' && data !== null) {
               for (const key in data) {
-                if (Array.isArray(data[key])) return data[key].length;
+                if (Array.isArray((data as Record<string, unknown>)[key])) {
+                  return ((data as Record<string, unknown>)[key] as unknown[])
+                    .length;
+                }
               }
             }
 
@@ -90,23 +98,25 @@ export function useProfileStats(username: string, isEnabled: boolean = true) {
         if (postsRes.status === 'fulfilled') {
           const payload = postsRes.value.data;
           const data = payload?.data || payload;
-          let postsArray: any[] = [];
+          let postsArray: PostWithLikes[] = [];
 
           if (Array.isArray(data)) postsArray = data;
           else if (data && typeof data === 'object') {
             // Try to find the array again using the same logic as getCount
             const arrayFields = ['data', 'items', 'results', 'posts'];
             for (const key of arrayFields) {
-              if (Array.isArray(data[key])) {
-                postsArray = data[key];
+              const value = (data as Record<string, unknown>)[key];
+              if (Array.isArray(value)) {
+                postsArray = value as PostWithLikes[];
                 break;
               }
             }
             // If still not found, check all keys
             if (postsArray.length === 0) {
               for (const key in data) {
-                if (Array.isArray(data[key])) {
-                  postsArray = data[key];
+                const value = (data as Record<string, unknown>)[key];
+                if (Array.isArray(value)) {
+                  postsArray = value as PostWithLikes[];
                   break;
                 }
               }
@@ -115,7 +125,7 @@ export function useProfileStats(username: string, isEnabled: boolean = true) {
 
           if (postsArray.length > 0) {
             calculatedLikes = postsArray.reduce(
-              (sum: number, post: any) => sum + (post.likeCount || 0),
+              (sum: number, post: PostWithLikes) => sum + (post.likeCount || 0),
               0
             );
           }

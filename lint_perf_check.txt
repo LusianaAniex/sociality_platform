@@ -1,0 +1,71 @@
+
+> sociality_platform@0.1.0 lint
+> eslint
+
+
+C:\Users\Aniex\github-classroom\sociality_platform\src\app\edit-profile\page.tsx
+    8:30  warning  'Upload' is defined but never used             @typescript-eslint/no-unused-vars
+    9:8   warning  'Link' is defined but never used               @typescript-eslint/no-unused-vars
+   10:8   warning  'Image' is defined but never used              @typescript-eslint/no-unused-vars
+  106:13  warning  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  125:21  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+C:\Users\Aniex\github-classroom\sociality_platform\src\app\login\page.tsx
+  35:14  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\Aniex\github-classroom\sociality_platform\src\app\users\[username]\page.tsx
+    9:10  warning  'Button' is defined but never used                               @typescript-eslint/no-unused-vars
+   11:10  warning  'PostCard' is defined but never used                             @typescript-eslint/no-unused-vars
+   89:12  warning  'postsError' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  110:20  warning  'e' is defined but never used                                    @typescript-eslint/no-unused-vars
+  149:38  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  182:67  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\Aniex\github-classroom\sociality_platform\src\components\layout\TopNav.tsx
+  26:9  warning  'pathname' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Aniex\github-classroom\sociality_platform\src\components\ui\textarea.tsx
+  5:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+C:\Users\Aniex\github-classroom\sociality_platform\src\features\auth\components\AuthGuard.tsx
+  44:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+
+C:\Users\Aniex\github-classroom\sociality_platform\src\features\auth\components\LoginForm.tsx
+  52:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Aniex\github-classroom\sociality_platform\src\features\auth\components\RegisterForm.tsx
+  35:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Aniex\github-classroom\sociality_platform\src\features\post\components\CommentSection.tsx
+   95:27  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  115:30  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  508:17  warning  'response' is defined but never used      @typescript-eslint/no-unused-vars
+  512:72  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  515:64  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  519:36  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  523:41  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  533:22  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  547:42  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Aniex\github-classroom\sociality_platform\src\features\post\components\LikesModal.tsx
+  14:19  warning  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Aniex\github-classroom\sociality_platform\src\features\post\components\PostCard.tsx
+  10:10  warning  'Button' is defined but never used  @typescript-eslint/no-unused-vars
+  18:10  warning  'Post' is defined but never used    @typescript-eslint/no-unused-vars
+
+C:\Users\Aniex\github-classroom\sociality_platform\src\features\profile\components\FollowButton.tsx
+  58:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Aniex\github-classroom\sociality_platform\src\features\profile\components\ProfileHeader.tsx
+  60:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+  62:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+  70:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+  90:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+
+C:\Users\Aniex\github-classroom\sociality_platform\src\hooks\useProfileStats.ts
+  36:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 35 problems (17 errors, 18 warnings)
+  0 errors and 5 warnings potentially fixable with the `--fix` option.
+

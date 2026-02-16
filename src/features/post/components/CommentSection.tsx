@@ -581,6 +581,9 @@ export const CommentSection = ({
         >
           <SheetHeader className='sr-only'>
             <SheetTitle>Comments</SheetTitle>
+            <SheetDescription>
+              A list of comments for this post.
+            </SheetDescription>
           </SheetHeader>
           <CommentsList
             comments={comments}

@@ -25,6 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import { setCredentials } from '@/store/authSlice';
 import { axiosInstance } from '@/lib/axios';
+import AuthGuard from '@/features/auth/components/AuthGuard';
 
 // Schema Validation
 const formSchema = z.object({
@@ -165,176 +166,180 @@ export default function EditProfilePage() {
   }
 
   return (
-    <div className='min-h-screen bg-black text-white p-6 md:p-12 pb-24'>
-      <div className='max-w-4xl mx-auto'>
-        {/* Header */}
-        <div className='flex items-center gap-4 mb-8'>
-          <Button
-            variant='ghost'
-            size='icon'
-            onClick={() => router.back()}
-            className='text-white hover:bg-neutral-800'
-          >
-            <ArrowLeft className='w-6 h-6' />
-          </Button>
-          <h1 className='text-2xl font-bold'>Edit Profile</h1>
-        </div>
-
-        <div className='flex flex-col md:flex-row gap-12'>
-          {/* Left Column: Avatar */}
-          <div className='flex flex-col items-center gap-4 md:w-1/3'>
-            <Avatar className='w-40 h-40 border-4 border-neutral-900'>
-              <AvatarImage
-                src={avatarPreview || 'https://github.com/shadcn.png'}
-                className='object-cover'
-              />
-              <AvatarFallback className='bg-neutral-800 text-4xl'>
-                {user.username?.[0]?.toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-
-            <div className='relative'>
-              <input
-                type='file'
-                id='avatar-upload'
-                className='hidden'
-                accept='image/*'
-                onChange={handleAvatarChange}
-              />
-              <Button
-                variant='outline'
-                className='bg-transparent border-neutral-700 text-white hover:bg-neutral-800'
-                onClick={() =>
-                  document.getElementById('avatar-upload')?.click()
-                }
-              >
-                Change Photo
-              </Button>
-            </div>
+    <AuthGuard>
+      <div className='min-h-screen bg-black text-white p-6 md:p-12 pb-24'>
+        <div className='max-w-4xl mx-auto'>
+          {/* Header */}
+          <div className='flex items-center gap-4 mb-8'>
+            <Button
+              variant='ghost'
+              size='icon'
+              onClick={() => router.back()}
+              className='text-white hover:bg-neutral-800'
+            >
+              <ArrowLeft className='w-6 h-6' />
+            </Button>
+            <h1 className='text-2xl font-bold'>Edit Profile</h1>
           </div>
 
-          {/* Right Column: Form */}
-          <div className='flex-1 max-w-xl'>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className='space-y-6'
-              >
-                <FormField
-                  control={form.control}
-                  name='name'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='text-neutral-300'>Name</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder='Your Name'
-                          {...field}
-                          className='bg-neutral-900 border-none text-white focus-visible:ring-1 focus-visible:ring-primary-500 h-12'
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+          <div className='flex flex-col md:flex-row gap-12'>
+            {/* Left Column: Avatar */}
+            <div className='flex flex-col items-center gap-4 md:w-1/3'>
+              <Avatar className='w-40 h-40 border-4 border-neutral-900'>
+                <AvatarImage
+                  src={avatarPreview || 'https://github.com/shadcn.png'}
+                  className='object-cover'
                 />
+                <AvatarFallback className='bg-neutral-800 text-4xl'>
+                  {user.username?.[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
 
-                <FormField
-                  control={form.control}
-                  name='username'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='text-neutral-300'>
-                        Username
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder='username'
-                          {...field}
-                          className='bg-neutral-900 border-none text-white focus-visible:ring-1 focus-visible:ring-primary-500 h-12'
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+              <div className='relative'>
+                <input
+                  type='file'
+                  id='avatar-upload'
+                  className='hidden'
+                  accept='image/*'
+                  onChange={handleAvatarChange}
                 />
+                <Button
+                  variant='outline'
+                  className='bg-transparent border-neutral-700 text-white hover:bg-neutral-800'
+                  onClick={() =>
+                    document.getElementById('avatar-upload')?.click()
+                  }
+                >
+                  Change Photo
+                </Button>
+              </div>
+            </div>
 
-                <FormField
-                  control={form.control}
-                  name='email'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='text-neutral-300'>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder='email@example.com'
-                          {...field}
-                          className='bg-neutral-900 border-none text-white focus-visible:ring-1 focus-visible:ring-primary-500 h-12'
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name='phoneNumber'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='text-neutral-300'>
-                        Phone Number
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder='08123456789'
-                          {...field}
-                          className='bg-neutral-900 border-none text-white focus-visible:ring-1 focus-visible:ring-primary-500 h-12'
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name='bio'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='text-neutral-300'>Bio</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder='Tell us about yourself'
-                          {...field}
-                          className='bg-neutral-900 border-none text-white focus-visible:ring-1 focus-visible:ring-primary-500 min-h-[120px] resize-none'
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className='pt-4'>
-                  <Button
-                    type='submit'
-                    disabled={isLoading}
-                    className='w-full h-12 rounded-lg bg-primary-200 text-base-white font-semibold transition-all duration-300 hover:shadow-[0_0_20px_rgba(135,126,255,0.7)] hover:bg-primary-300'
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                        Updating...
-                      </>
-                    ) : (
-                      'Update Profile'
+            {/* Right Column: Form */}
+            <div className='flex-1 max-w-xl'>
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className='space-y-6'
+                >
+                  <FormField
+                    control={form.control}
+                    name='name'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className='text-neutral-300'>Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder='Your Name'
+                            {...field}
+                            className='bg-neutral-900 border-none text-white focus-visible:ring-1 focus-visible:ring-primary-500 h-12'
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                  </Button>
-                </div>
-              </form>
-            </Form>
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='username'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className='text-neutral-300'>
+                          Username
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder='username'
+                            {...field}
+                            className='bg-neutral-900 border-none text-white focus-visible:ring-1 focus-visible:ring-primary-500 h-12'
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='email'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className='text-neutral-300'>
+                          Email
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder='email@example.com'
+                            {...field}
+                            className='bg-neutral-900 border-none text-white focus-visible:ring-1 focus-visible:ring-primary-500 h-12'
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='phoneNumber'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className='text-neutral-300'>
+                          Phone Number
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder='08123456789'
+                            {...field}
+                            className='bg-neutral-900 border-none text-white focus-visible:ring-1 focus-visible:ring-primary-500 h-12'
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='bio'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className='text-neutral-300'>Bio</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder='Tell us about yourself'
+                            {...field}
+                            className='bg-neutral-900 border-none text-white focus-visible:ring-1 focus-visible:ring-primary-500 min-h-[120px] resize-none'
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className='pt-4'>
+                    <Button
+                      type='submit'
+                      disabled={isLoading}
+                      className='w-full h-12 rounded-lg bg-primary-200 text-base-white font-semibold transition-all duration-300 hover:shadow-[0_0_20px_rgba(135,126,255,0.7)] hover:bg-primary-300'
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                          Updating...
+                        </>
+                      ) : (
+                        'Update Profile'
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }

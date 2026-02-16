@@ -103,7 +103,7 @@ export const PostCard = ({ post, priority = false }: PostCardProps) => {
             <Avatar className='w-10 h-10 border border-neutral-800'>
               <AvatarImage src={avatarUrl} alt={username} />
               <AvatarFallback className='bg-neutral-800 text-base-white'>
-                {username[0].toUpperCase()}
+                {username?.[0]?.toUpperCase() || '?'}
               </AvatarFallback>
             </Avatar>
           </Link>

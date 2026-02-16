@@ -1,9 +1,6 @@
-'use client';
-
 import { PostCard } from '@/features/post/components/PostCard';
 import { Loader2 } from 'lucide-react';
-import { useEffect } from 'react';
-import { useInView } from 'react-intersection-observer';
+import { Virtuoso } from 'react-virtuoso';
 import { InfiniteData } from '@tanstack/react-query';
 import { FeedResponse } from '@/features/feed/types';
 
@@ -28,14 +25,6 @@ export const FeedList = ({
   title,
   emptyMessage = 'No posts yet!',
 }: FeedListProps) => {
-  const { ref, inView } = useInView();
-
-  useEffect(() => {
-    if (inView && hasNextPage) {
-      fetchNextPage();
-    }
-  }, [inView, hasNextPage, fetchNextPage]);
-
   if (status === 'pending') {
     return <div className='text-center p-10'>Loading...</div>;
   }
@@ -66,13 +55,29 @@ export const FeedList = ({
     <div className='flex flex-col gap-6 pb-20'>
       {title && <h2 className='text-xl font-bold text-white mb-2'>{title}</h2>}
 
-      {posts.map((post, index) => (
-        <PostCard key={post.id} post={post} priority={index === 0} />
-      ))}
-
-      <div ref={ref} className='flex justify-center p-4'>
-        {isFetchingNextPage && <Loader2 className='animate-spin text-white' />}
-      </div>
+      <Virtuoso
+        useWindowScroll
+        data={posts}
+        endReached={() => {
+          if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          }
+        }}
+        itemContent={(index: number, post: FeedResponse['items'][0]) => (
+          <div className='mb-6'>
+            <PostCard post={post} priority={index === 0} />
+          </div>
+        )}
+        components={{
+          Footer: () => (
+            <div className='flex justify-center p-4'>
+              {isFetchingNextPage && (
+                <Loader2 className='animate-spin text-white' />
+              )}
+            </div>
+          ),
+        }}
+      />
     </div>
   );
 };

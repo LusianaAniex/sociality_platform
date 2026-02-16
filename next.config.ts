@@ -1,4 +1,4 @@
-import type { NextConfig } from 'next';
+import type { NextConfig } from 'next'; // force config reload
 
 const nextConfig: NextConfig = {
   images: {
