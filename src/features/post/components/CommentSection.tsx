@@ -275,7 +275,7 @@ const DesktopSidebar = ({
                 src={post.author.avatarUrl || '/placeholder-user.jpg'}
               />
               <AvatarFallback className='bg-neutral-800 text-xs text-white'>
-                {post.author.username[0].toUpperCase()}
+                {post.author.username?.[0]?.toUpperCase() || '?'}
               </AvatarFallback>
             </Avatar>
           </Link>
@@ -328,7 +328,7 @@ const DesktopSidebar = ({
                   src={post.author.avatarUrl || '/placeholder-user.jpg'}
                 />
                 <AvatarFallback className='bg-neutral-800 text-xs text-white'>
-                  {post.author.username[0].toUpperCase()}
+                  {post.author.username?.[0]?.toUpperCase() || '?'}
                 </AvatarFallback>
               </Avatar>
             </Link>
