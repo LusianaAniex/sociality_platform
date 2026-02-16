@@ -26,7 +26,7 @@ export const SearchModal = () => {
   const handleSelect = () => {
     setIsOpen(false);
   };
-  console.log('SearchModal state:', { query, results, isLoading });
+  // console.log('SearchModal state:', { query, results, isLoading });
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>

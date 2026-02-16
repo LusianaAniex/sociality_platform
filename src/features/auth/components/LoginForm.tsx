@@ -72,7 +72,7 @@ export const LoginForm = () => {
       <div className='space-y-2'>
         <Label
           htmlFor='email'
-          className='text-body-sm font-medium text-[#D5D7DA]'
+          className='text-body-sm font-medium text-neutral-300'
         >
           Email
         </Label>
@@ -81,10 +81,10 @@ export const LoginForm = () => {
           type='email'
           placeholder='Enter your email'
           {...register('email')}
-          className='w-full bg-transparent border border-[#414651] text-white placeholder:text-[#717680] focus:border-[#7F51F9] focus:ring-1 focus:ring-[#7F51F9] transition-colors h-12 px-4 rounded-md'
+          className='w-full bg-transparent border border-neutral-700 text-white placeholder:text-neutral-500 focus:border-primary-200 focus:ring-1 focus:ring-primary-200 transition-colors h-12 px-4 rounded-md'
         />
         {errors.email && (
-          <p className='text-[#D9206E] text-body-xs'>{errors.email.message}</p>
+          <p className='text-accent-red text-body-xs'>{errors.email.message}</p>
         )}
       </div>
 
@@ -92,7 +92,7 @@ export const LoginForm = () => {
       <div className='space-y-2'>
         <Label
           htmlFor='password'
-          className='text-body-sm font-medium text-[#D5D7DA]'
+          className='text-body-sm font-medium text-neutral-300'
         >
           Password
         </Label>
@@ -102,12 +102,12 @@ export const LoginForm = () => {
             type={showPassword ? 'text' : 'password'}
             placeholder='Enter your password'
             {...register('password')}
-            className='w-full bg-transparent border border-[#414651] text-white placeholder:text-[#717680] focus:border-[#7F51F9] focus:ring-1 focus:ring-[#7F51F9] transition-colors h-12 px-4 pr-12 rounded-md'
+            className='w-full bg-transparent border border-neutral-700 text-white placeholder:text-neutral-500 focus:border-primary-200 focus:ring-1 focus:ring-primary-200 transition-colors h-12 px-4 pr-12 rounded-md'
           />
           <button
             type='button'
             onClick={() => setShowPassword(!showPassword)}
-            className='absolute right-4 top-1/2 -translate-y-1/2 text-[#A4A7AE] hover:text-white transition-colors'
+            className='absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white transition-colors'
           >
             {showPassword ? (
               <EyeOff className='w-5 h-5' />
@@ -117,7 +117,7 @@ export const LoginForm = () => {
           </button>
         </div>
         {errors.password && (
-          <p className='text-[#D9206E] text-body-xs'>
+          <p className='text-accent-red text-body-xs'>
             {errors.password.message}
           </p>
         )}
@@ -126,7 +126,7 @@ export const LoginForm = () => {
       {/* Login Button */}
       <Button
         type='submit'
-        className='w-full h-12 bg-linear-to-r from-[#6936F2] to-[#7F51F9] hover:from-[#7F51F9] hover:to-[#6936F2] text-white font-semibold text-body-md transition-all duration-300 shadow-lg shadow-[#7F51F9]/20 rounded-md'
+        className='w-full h-12 bg-linear-to-r from-primary-300 to-primary-200 hover:from-primary-200 hover:to-primary-300 text-white font-semibold text-body-md transition-all duration-300 shadow-lg shadow-primary-200/20 rounded-md'
         disabled={mutation.isPending}
       >
         {mutation.isPending ? 'Loading...' : 'Login'}

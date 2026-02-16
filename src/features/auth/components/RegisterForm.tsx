@@ -58,10 +58,10 @@ export const RegisterForm = () => {
           type='text'
           placeholder='Enter your username'
           {...register('username')}
-          className='w-full bg-transparent border border-neutral-700 text-white placeholder:text-neutral-500 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors h-11 px-4 rounded-md'
+          className='w-full bg-transparent border border-neutral-700 text-white placeholder:text-neutral-500 focus:border-primary-200 focus:ring-1 focus:ring-primary-200 transition-colors h-11 px-4 rounded-md'
         />
         {errors.username && (
-          <p className='text-red-400 text-xs'>{errors.username.message}</p>
+          <p className='text-accent-red text-xs'>{errors.username.message}</p>
         )}
       </div>
 
@@ -78,10 +78,10 @@ export const RegisterForm = () => {
           type='text'
           placeholder='Enter your name'
           {...register('name')}
-          className='w-full bg-transparent border border-neutral-700 text-white placeholder:text-neutral-500 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors h-11 px-4 rounded-md'
+          className='w-full bg-transparent border border-neutral-700 text-white placeholder:text-neutral-500 focus:border-primary-200 focus:ring-1 focus:ring-primary-200 transition-colors h-11 px-4 rounded-md'
         />
         {errors.name && (
-          <p className='text-red-400 text-xs'>{errors.name.message}</p>
+          <p className='text-accent-red text-xs'>{errors.name.message}</p>
         )}
       </div>
 
@@ -98,10 +98,10 @@ export const RegisterForm = () => {
           type='email'
           placeholder='Enter your email'
           {...register('email')}
-          className='w-full bg-transparent border border-neutral-700 text-white placeholder:text-neutral-500 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors h-11 px-4 rounded-md'
+          className='w-full bg-transparent border border-neutral-700 text-white placeholder:text-neutral-500 focus:border-primary-200 focus:ring-1 focus:ring-primary-200 transition-colors h-11 px-4 rounded-md'
         />
         {errors.email && (
-          <p className='text-red-400 text-xs'>{errors.email.message}</p>
+          <p className='text-accent-red text-xs'>{errors.email.message}</p>
         )}
       </div>
 
@@ -118,17 +118,17 @@ export const RegisterForm = () => {
           type='password'
           placeholder='Enter your password'
           {...register('password')}
-          className='w-full bg-transparent border border-neutral-700 text-white placeholder:text-neutral-500 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors h-11 px-4 rounded-md'
+          className='w-full bg-transparent border border-neutral-700 text-white placeholder:text-neutral-500 focus:border-primary-200 focus:ring-1 focus:ring-primary-200 transition-colors h-11 px-4 rounded-md'
         />
         {errors.password && (
-          <p className='text-red-400 text-xs'>{errors.password.message}</p>
+          <p className='text-accent-red text-xs'>{errors.password.message}</p>
         )}
       </div>
 
       {/* Register Button */}
       <Button
         type='submit'
-        className='w-full h-12 bg-linear-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold text-sm transition-all duration-300 shadow-lg shadow-violet-500/20 rounded-md mt-6'
+        className='w-full h-12 bg-linear-to-r from-primary-300 to-primary-200 hover:from-primary-200 hover:to-primary-300 text-white font-semibold text-sm transition-all duration-300 shadow-lg shadow-primary-200/20 rounded-md mt-6'
         disabled={mutation.isPending}
       >
         {mutation.isPending ? 'Loading...' : 'Register'}
