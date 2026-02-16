@@ -14,6 +14,7 @@ import { Post } from '@/features/post/types';
 import { FeedResponse } from '@/features/feed/types';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import { setCredentials } from '@/store/authSlice';
+import { useProfileStats } from '@/hooks/useProfileStats';
 import { useEffect, useState } from 'react';
 
 export default function ProfilePage() {
@@ -109,6 +110,9 @@ export default function ProfilePage() {
     enabled: !!profile, // Only fetch posts if profile exists
   });
 
+  // 3. Fetch Profile Stats
+  const { data: stats } = useProfileStats(username, !!profile);
+
   // Ensure posts is always an array
   let posts: Post[] = [];
 
@@ -173,6 +177,7 @@ export default function ProfilePage() {
       <ProfileHeader
         profile={profile}
         isCurrentUser={isCurrentUser}
+        stats={stats}
         totalLikes={totalLikes}
       />
 

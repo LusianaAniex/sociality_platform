@@ -10,33 +10,74 @@ import { useState, useEffect } from 'react';
 interface ProfileHeaderProps {
   profile: UserProfile | null | undefined;
   isCurrentUser: boolean;
+  stats?: {
+    postsCount: number;
+    followersCount: number;
+    followingCount: number;
+    likesCount: number;
+  };
+  totalLikes?: number;
 }
 
 export default function ProfileHeader({
   profile,
   isCurrentUser,
-  totalLikes = 0,
-}: ProfileHeaderProps & { totalLikes?: number }) {
-  // Initialize follower count state
+  stats,
+  totalLikes,
+}: ProfileHeaderProps) {
   const [isFollowing, setIsFollowing] = useState(profile?.isFollowing ?? false);
-  const [followerCount, setFollowerCount] = useState(
-    profile?.followerCount || profile?.followersCount || 0
-  );
+  const [followerCount, setFollowerCount] = useState(0);
+  const [postCount, setPostCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [likesCount, setLikesCount] = useState(0);
 
-  // Update effect to sync with new profile data if it changes
+  // Update stats when props change
+  useEffect(() => {
+    // 1. Set stats from the hook if available
+    if (stats) {
+      setFollowerCount(stats.followersCount);
+      setPostCount(stats.postsCount);
+      setFollowingCount(stats.followingCount);
+      // NOTE: We do NOT set likesCount from stats here because useProfileStats
+      // fetches "liked posts" instead of "received likes".
+      // We wait for the 'totalLikes' prop below.
+    }
+    // 2. Fallback to profile object if stats are missing
+    else if (profile) {
+      setFollowerCount(profile.followerCount || profile.followersCount || 0);
+      setPostCount(
+        profile.postCount ||
+          profile.postsCount ||
+          profile.totalPosts ||
+          profile.post_count ||
+          0
+      );
+      setFollowingCount(
+        profile.followingCount ||
+          profile.followingsCount ||
+          profile.following_count ||
+          0
+      );
+    }
+
+    // 3. Always prioritize the explicitly passed totalLikes for the Likes stat
+    // This is calculated from the actual posts on the page
+    if (typeof totalLikes === 'number') {
+      setLikesCount(totalLikes);
+    }
+  }, [profile, stats, totalLikes]);
+
+  // Update following status from profile
   useEffect(() => {
     if (profile) {
       setIsFollowing(profile.isFollowing ?? false);
-      setFollowerCount(profile.followerCount || profile.followersCount || 0);
     }
   }, [profile]);
 
-  // If profile is null or undefined, show nothing or a loading state
   if (!profile) {
-    return <div>Loading profile...</div>;
+    return <div className='text-neutral-400'>Loading profile...</div>;
   }
 
-  // Check if the profile has the expected properties
   const displayName =
     profile.fullName || profile.name || profile.displayName || 'User';
   const displayUsername = profile.username || profile.handle || 'unknown';
@@ -47,26 +88,12 @@ export default function ProfileHeader({
     profile.profileImage;
   const displayBio = profile.bio || profile.biography || '';
   const displayWebsite = profile.website || profile.url || '';
-  const displayPostCount =
-    profile.postCount ||
-    profile.postsCount ||
-    profile.totalPosts ||
-    profile.post_count ||
-    0;
-
-  // followerCount is handled by state
-  const displayFollowingCount =
-    profile.followingCount ||
-    profile.followingsCount ||
-    profile.following_count ||
-    0;
 
   return (
     <div className='flex flex-col gap-6 mb-8'>
       {/* MOBILE LAYOUT */}
       <div className='md:hidden'>
         <div className='flex items-center gap-4 mb-4'>
-          {/* Avatar */}
           <Avatar className='w-20 h-20 border-2 border-neutral-800'>
             <AvatarImage src={displayAvatarUrl} alt={displayUsername} />
             <AvatarFallback className='text-xl bg-neutral-800 text-white'>
@@ -75,8 +102,6 @@ export default function ProfileHeader({
                 '?'}
             </AvatarFallback>
           </Avatar>
-
-          {/* Name & Handle */}
           <div className='flex-1 min-w-0'>
             <h1 className='text-lg font-bold text-white truncate'>
               {displayName}
@@ -85,7 +110,6 @@ export default function ProfileHeader({
           </div>
         </div>
 
-        {/* Bio */}
         <div className='mb-4'>
           <p className='text-sm text-white whitespace-pre-wrap'>{displayBio}</p>
           {displayWebsite && (
@@ -100,7 +124,6 @@ export default function ProfileHeader({
           )}
         </div>
 
-        {/* Buttons */}
         <div className='flex gap-2 mb-6'>
           {isCurrentUser ? (
             <Link href='/edit-profile' className='flex-1'>
@@ -126,12 +149,10 @@ export default function ProfileHeader({
           )}
         </div>
 
-        {/* Mobile Stats (Evenly Spaced) */}
+        {/* Mobile Stats */}
         <div className='flex justify-between border-t border-neutral-800 pt-4'>
           <div className='text-center'>
-            <div className='font-bold text-lg text-white'>
-              {displayPostCount}
-            </div>
+            <div className='font-bold text-lg text-white'>{postCount}</div>
             <div className='text-xs text-neutral-400'>Posts</div>
           </div>
           <div className='text-center'>
@@ -139,14 +160,11 @@ export default function ProfileHeader({
             <div className='text-xs text-neutral-400'>Followers</div>
           </div>
           <div className='text-center'>
-            <div className='font-bold text-lg text-white'>
-              {displayFollowingCount}
-            </div>
+            <div className='font-bold text-lg text-white'>{followingCount}</div>
             <div className='text-xs text-neutral-400'>Following</div>
           </div>
-          {/* Added Likes stats based on design */}
           <div className='text-center'>
-            <div className='font-bold text-lg text-white'>{totalLikes}</div>
+            <div className='font-bold text-lg text-white'>{likesCount}</div>
             <div className='text-xs text-neutral-400'>Likes</div>
           </div>
         </div>
@@ -154,7 +172,6 @@ export default function ProfileHeader({
 
       {/* DESKTOP LAYOUT */}
       <div className='hidden md:flex gap-8 items-start'>
-        {/* Avatar (Large) */}
         <Avatar className='w-32 h-32 border-4 border-base-black'>
           <AvatarImage src={displayAvatarUrl} alt={displayUsername} />
           <AvatarFallback className='text-4xl bg-neutral-800 text-white'>
@@ -164,9 +181,7 @@ export default function ProfileHeader({
           </AvatarFallback>
         </Avatar>
 
-        {/* Right Column */}
         <div className='flex-1 flex flex-col gap-5'>
-          {/* Row 1: Name, Handle, Buttons */}
           <div className='flex items-center justify-between'>
             <div>
               <h1 className='text-2xl font-bold text-white'>{displayName}</h1>
@@ -198,7 +213,6 @@ export default function ProfileHeader({
             </div>
           </div>
 
-          {/* Row 2: Bio */}
           <div>
             <p className='text-base text-white whitespace-pre-wrap max-w-2xl'>
               {displayBio}
@@ -215,12 +229,10 @@ export default function ProfileHeader({
             )}
           </div>
 
-          {/* Row 3: Stats */}
+          {/* Desktop Stats */}
           <div className='flex gap-10 mt-2'>
             <div className='text-center'>
-              <div className='font-bold text-xl text-white'>
-                {displayPostCount}
-              </div>
+              <div className='font-bold text-xl text-white'>{postCount}</div>
               <div className='text-sm text-neutral-400'>Posts</div>
             </div>
             <div className='text-center'>
@@ -231,12 +243,12 @@ export default function ProfileHeader({
             </div>
             <div className='text-center'>
               <div className='font-bold text-xl text-white'>
-                {displayFollowingCount}
+                {followingCount}
               </div>
               <div className='text-sm text-neutral-400'>Following</div>
             </div>
             <div className='text-center'>
-              <div className='font-bold text-xl text-white'>{totalLikes}</div>
+              <div className='font-bold text-xl text-white'>{likesCount}</div>
               <div className='text-sm text-neutral-400'>Likes</div>
             </div>
           </div>
