@@ -55,7 +55,7 @@ export function UserSimpleCard({ user, bgConfig }: UserSimpleCardProps) {
           <FollowButton
             userId={user.id}
             username={user.username}
-            initialIsFollowing={user.isFollowing}
+            initialIsFollowing={user.isFollowing ?? false}
             className='h-8 px-3 text-xs'
           />
         </div>
