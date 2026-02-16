@@ -8,7 +8,7 @@ export const useFeed = () => {
     queryFn: async ({ pageParam = 1 }): Promise<FeedResponse> => {
       try {
         // ✅ USE THE WORKING ENDPOINT from your probe
-        // ✅ USE THE WORKING ENDPOINT confirmed by debug page
+        // Reverting to /posts with type='following' as /feed might not be implemented
         const response = await axiosInstance.get(`/posts`, {
           params: {
             page: pageParam,

@@ -1,25 +1,33 @@
 'use client';
 
-import { useFeed } from '../hooks/useFeed'; // Import our new hook
 import { PostCard } from '@/features/post/components/PostCard';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react'; // Spinner icon
+import { Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
-import { useInView } from 'react-intersection-observer'; // installed this for auto-scroll
+import { useInView } from 'react-intersection-observer';
+import { InfiniteData } from '@tanstack/react-query';
+import { FeedResponse } from '@/features/feed/types';
 
-export const FeedList = () => {
-  // 1. Use the Hook
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    status,
-    error,
-  } = useFeed();
+interface FeedListProps {
+  data: InfiniteData<FeedResponse> | undefined;
+  fetchNextPage: () => void;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  status: 'pending' | 'error' | 'success';
+  error: Error | null;
+  title?: string;
+  emptyMessage?: string;
+}
 
-  // 2. Setup "Infinite Scroll" trigger
-  // When this invisible element (ref) comes into view, load more!
+export const FeedList = ({
+  data,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
+  status,
+  error,
+  title,
+  emptyMessage = 'No posts yet!',
+}: FeedListProps) => {
   const { ref, inView } = useInView();
 
   useEffect(() => {
@@ -28,9 +36,8 @@ export const FeedList = () => {
     }
   }, [inView, hasNextPage, fetchNextPage]);
 
-  // 3. Handle States
   if (status === 'pending') {
-    return <div className='text-center p-10'>Loading your feed...</div>;
+    return <div className='text-center p-10'>Loading...</div>;
   }
 
   if (status === 'error') {
@@ -42,28 +49,29 @@ export const FeedList = () => {
     );
   }
 
-  // 4. Flatten the pages (Page 1 + Page 2 + ...) into one list
   const posts = data?.pages.flatMap((page) => page.items) || [];
 
   if (posts.length === 0) {
     return (
-      <div className='text-center py-20 bg-white rounded-lg border'>
-        <h3 className='text-lg font-medium'>No posts yet!</h3>
-        <p className='text-gray-500'>Follow some users to see their updates.</p>
+      <div className='text-center py-20 bg-neutral-900/50 rounded-lg border border-neutral-800'>
+        <h3 className='text-lg font-medium text-white'>{emptyMessage}</h3>
+        <p className='text-neutral-500 mt-2'>
+          Check back later or follow more users.
+        </p>
       </div>
     );
   }
 
   return (
     <div className='flex flex-col gap-6 pb-20'>
-      {/* Render Posts */}
+      {title && <h2 className='text-xl font-bold text-white mb-2'>{title}</h2>}
+
       {posts.map((post, index) => (
         <PostCard key={post.id} post={post} priority={index === 0} />
       ))}
 
-      {/* Loading Indicator at bottom */}
       <div ref={ref} className='flex justify-center p-4'>
-        {isFetchingNextPage && <Loader2 className='animate-spin' />}
+        {isFetchingNextPage && <Loader2 className='animate-spin text-white' />}
       </div>
     </div>
   );

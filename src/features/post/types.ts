@@ -54,7 +54,7 @@ export interface PostCardProps {
  */
 export interface CommentSectionProps {
   postId: string;
-  variant?: 'mobile' | 'desktop' | 'inline';
+  variant?: 'mobile' | 'desktop' | 'inline' | 'page';
   isOpen?: boolean;
   onClose?: () => void;
   post?: Post; // For desktop modal to show image

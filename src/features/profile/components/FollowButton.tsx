@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { axiosInstance } from '@/lib/axios'; // Ensure this path is correct
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CheckCheck } from 'lucide-react';
 import { useAppSelector } from '@/hooks/useRedux';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -93,16 +93,19 @@ export function FollowButton({
       onClick={handleFollowToggle}
       disabled={isLoading}
       variant={isFollowing ? 'secondary' : 'default'}
-      className={`rounded-full px-4 h-8 text-xs font-semibold ${
+      className={`rounded-full bg-primary-300 text-white px-4 h-9 font-semibold transition-all duration-300 ${
         isFollowing
-          ? 'bg-transparent border border-neutral-700 text-white hover:bg-neutral-800'
-          : 'bg-primary-200 text-base-white hover:bg-primary-300'
+          ? 'bg-black border border-primary-300 text-primary-300 hover:bg-neutral-900 shadow-[0_0_10px_rgba(167,139,250,0.3)]'
+          : 'bg-primary-300 text-white hover:bg-primary-400'
       } ${className}`}
     >
       {isLoading ? (
-        <Loader2 className='w-3 h-3 animate-spin' />
+        <Loader2 className='w-4 h-4 animate-spin' />
       ) : isFollowing ? (
-        'Following'
+        <div className='flex items-center gap-2'>
+          <CheckCheck className='w-4 h-4' />
+          <span>Following</span>
+        </div>
       ) : (
         'Follow'
       )}

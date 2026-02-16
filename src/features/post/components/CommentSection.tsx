@@ -15,7 +15,10 @@ import {
   MessageCircle,
   Bookmark,
   MoreHorizontal,
+  Trash2,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useAppSelector } from '@/hooks/useRedux';
 import dynamic from 'next/dynamic';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -90,7 +93,7 @@ interface CommentInputProps {
   showEmojiPicker: boolean;
   setShowEmojiPicker: (val: boolean) => void;
   handleEmojiClick: (val: any) => void;
-  variant?: 'mobile' | 'desktop' | 'inline';
+  variant?: 'mobile' | 'desktop' | 'inline' | 'page';
 }
 
 const CommentInput = ({
@@ -156,6 +159,7 @@ interface DesktopSidebarProps {
   isLoading: boolean;
   onClose: () => void;
   inputProps: CommentInputProps;
+  variant?: 'mobile' | 'desktop' | 'inline' | 'page';
 }
 
 const DesktopSidebar = ({
@@ -164,11 +168,19 @@ const DesktopSidebar = ({
   isLoading,
   onClose,
   inputProps,
+  variant,
 }: DesktopSidebarProps) => {
   // ADDED STATE
   const [isLiked, setIsLiked] = useState(post?.likedByMe ?? false);
   const [likesCount, setLikesCount] = useState(post?.likeCount ?? 0);
   const [isLiking, setIsLiking] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const { user: currentUser } = useAppSelector((state) => state.auth);
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  const isOwner = currentUser?.username === post?.author.username;
 
   // Sync state if post changes
   useEffect(() => {
@@ -199,6 +211,31 @@ const DesktopSidebar = ({
     }
   };
 
+  const handleDelete = async () => {
+    if (!post || isDeleting) return;
+
+    if (confirm('Are you sure you want to delete this post?')) {
+      setIsDeleting(true);
+      try {
+        await axiosInstance.delete(`/posts/${post.id}`);
+        queryClient.invalidateQueries({ queryKey: ['feed'] });
+        queryClient.invalidateQueries({ queryKey: ['profile-posts'] });
+
+        // If we are in a modal (onClose exists), close it.
+        // If we are on a page, redirect.
+        // However, onClose is always passed.
+        // We can check if we are on the post page by checking if window.location includes /posts/
+
+        onClose();
+        router.push('/');
+      } catch (error) {
+        console.error('Failed to delete post:', error);
+        alert('Failed to delete post');
+        setIsDeleting(false);
+      }
+    }
+  };
+
   if (!post) return null;
 
   return (
@@ -208,7 +245,9 @@ const DesktopSidebar = ({
         <div className='flex items-center gap-3'>
           <Link href={`/users/${post.author.username}`}>
             <Avatar className='w-8 h-8 ring-1 ring-neutral-800'>
-              <AvatarImage src={post.author.avatarUrl ?? undefined} />
+              <AvatarImage
+                src={post.author.avatarUrl || '/placeholder-user.jpg'}
+              />
               <AvatarFallback className='bg-neutral-800 text-xs text-white'>
                 {post.author.username[0].toUpperCase()}
               </AvatarFallback>
@@ -230,9 +269,25 @@ const DesktopSidebar = ({
           </div>
         </div>
         <div className='flex items-center gap-4'>
-          <button className='text-neutral-400 hover:text-white'>
-            <MoreHorizontal className='w-5 h-5' />
-          </button>
+          {isOwner ? (
+            <Button
+              variant='ghost'
+              size='icon'
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className='text-red-500 hover:text-red-400 bg-primary-300 hover:bg-primary-200 border-neutral-800 rounded-full h-9 shadow-[0_0_15px_rgba(139,92,246,0.5)] hover:shadow-[0_0_50px_rgba(139,92,246,0.9)] transition-all duration-300'
+            >
+              {isDeleting ? (
+                <Loader2 className='w-5 h-5 animate-spin' />
+              ) : (
+                <Trash2 className='w-5 h-5' />
+              )}
+            </Button>
+          ) : (
+            <button className='text-neutral-400 hover:text-white'>
+              <MoreHorizontal className='w-5 h-5' />
+            </button>
+          )}
         </div>
       </div>
 
@@ -243,7 +298,9 @@ const DesktopSidebar = ({
           <div className='flex gap-3'>
             <Link href={`/users/${post.author.username}`}>
               <Avatar className='w-8 h-8 ring-1 ring-neutral-800'>
-                <AvatarImage src={post.author.avatarUrl ?? undefined} />
+                <AvatarImage
+                  src={post.author.avatarUrl || '/placeholder-user.jpg'}
+                />
                 <AvatarFallback className='bg-neutral-800 text-xs text-white'>
                   {post.author.username[0].toUpperCase()}
                 </AvatarFallback>
@@ -310,7 +367,7 @@ const DesktopSidebar = ({
       </div>
 
       {/* INPUT */}
-      <CommentInput {...inputProps} variant='desktop' />
+      <CommentInput {...inputProps} variant={variant || 'desktop'} />
     </div>
   );
 };
@@ -320,7 +377,7 @@ interface CommentsListProps {
   comments: Comment[];
   isLoading: boolean;
   handleClose: () => void;
-  variant: 'mobile' | 'desktop' | 'inline';
+  variant: 'mobile' | 'desktop' | 'inline' | 'page';
   isMobile?: boolean;
   inputProps: CommentInputProps;
   hideInput?: boolean;
@@ -515,6 +572,44 @@ export const CommentSection = ({
         inputProps={inputProps}
         hideInput={hideInput}
       />
+    );
+  }
+
+  if (variant === 'page') {
+    return (
+      <div className='flex flex-col md:flex-row bg-black text-white w-full h-[calc(100vh-80px)] overflow-hidden border border-neutral-800 rounded-lg mx-auto max-w-6xl'>
+        {/* LEFT: IMAGE */}
+        <div className='flex-1 relative bg-black flex items-center justify-center overflow-hidden border-r border-neutral-800'>
+          {post?.imageUrl ? (
+            <div className='relative w-full h-full'>
+              <Image
+                src={post.imageUrl}
+                alt='Post content'
+                fill
+                className='object-contain'
+                priority
+                sizes='(max-width: 768px) 100vw, 65vw'
+              />
+            </div>
+          ) : (
+            <div className='flex items-center justify-center h-full text-neutral-500'>
+              No image available
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT: SIDEBAR */}
+        <div className='w-full md:w-[400px] lg:w-[450px] shrink-0 h-full flex flex-col bg-black'>
+          <DesktopSidebar
+            post={post}
+            comments={comments}
+            isLoading={isLoading}
+            onClose={() => {}} // No close action for page
+            inputProps={inputProps}
+            variant={variant}
+          />
+        </div>
+      </div>
     );
   }
 
