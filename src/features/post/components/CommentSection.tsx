@@ -175,6 +175,8 @@ const DesktopSidebar = ({
   const [likesCount, setLikesCount] = useState(post?.likeCount ?? 0);
   const [isLiking, setIsLiking] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaved, setIsSaved] = useState(post?.isSaved ?? false);
+  const [isBookmarking, setIsBookmarking] = useState(false);
 
   const { user: currentUser } = useAppSelector((state) => state.auth);
   const router = useRouter();
@@ -187,6 +189,7 @@ const DesktopSidebar = ({
     if (post) {
       setIsLiked(post.likedByMe);
       setLikesCount(post.likeCount);
+      setIsSaved(post.isSaved ?? false);
     }
   }, [post]);
 
@@ -208,6 +211,29 @@ const DesktopSidebar = ({
       setLikesCount((prev) => (!newIsLiked ? prev + 1 : prev - 1));
     } finally {
       setIsLiking(false);
+    }
+  };
+
+  const handleBookmark = async () => {
+    if (isBookmarking || !post) return;
+    const newIsSaved = !isSaved;
+
+    setIsSaved(newIsSaved);
+    setIsBookmarking(true);
+
+    try {
+      if (newIsSaved) {
+        await axiosInstance.post(`/posts/${post.id}/save`);
+      } else {
+        await axiosInstance.delete(`/posts/${post.id}/save`);
+      }
+      queryClient.invalidateQueries({ queryKey: ['feed'] });
+      queryClient.invalidateQueries({ queryKey: ['profile-posts'] });
+    } catch (error) {
+      console.error('Failed to toggle bookmark:', error);
+      setIsSaved(!newIsSaved);
+    } finally {
+      setIsBookmarking(false);
     }
   };
 
@@ -356,7 +382,14 @@ const DesktopSidebar = ({
             <MessageCircle className='w-6 h-6 text-white hover:text-neutral-400 cursor-pointer' />
             <Send className='w-6 h-6 text-white hover:text-neutral-400 cursor-pointer' />
           </div>
-          <Bookmark className='w-6 h-6 text-white hover:text-neutral-400 cursor-pointer' />
+          <Bookmark
+            onClick={handleBookmark}
+            className={`w-6 h-6 cursor-pointer transition-colors ${
+              isSaved
+                ? 'fill-primary-200 text-primary-200'
+                : 'text-white hover:text-neutral-400'
+            }`}
+          />
         </div>
         <div className='flex flex-col gap-1'>
           <span className='text-sm font-semibold'>{likesCount} likes</span>

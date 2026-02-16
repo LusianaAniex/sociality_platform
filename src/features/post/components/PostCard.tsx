@@ -185,7 +185,7 @@ export const PostCard = ({ post, priority = false }: PostCardProps) => {
               className='active:scale-125 transition-transform'
             >
               <Bookmark
-                className={`w-6 h-6 transition-colors ${isBookmarked ? 'fill-base-white text-base-white' : 'text-base-white hover:text-neutral-300'}`}
+                className={`w-6 h-6 transition-colors ${isBookmarked ? 'fill-primary-200 text-primary-200' : 'text-base-white hover:text-neutral-300'}`}
               />
             </button>
           </div>
