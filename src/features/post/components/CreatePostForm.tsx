@@ -79,7 +79,7 @@ export const CreatePostForm = () => {
           <div className='flex flex-col items-center justify-center w-full'>
             <label
               htmlFor='image-upload'
-              className='flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors relative overflow-hidden'
+              className='flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-neutral-700 rounded-lg cursor-pointer bg-neutral-900 hover:bg-neutral-800 transition-colors relative overflow-hidden'
             >
               {imagePreview ? (
                 <Image
@@ -120,7 +120,7 @@ export const CreatePostForm = () => {
           <Button
             type='submit'
             disabled={!imageFile || isLoading}
-            className='w-full'
+            className='w-full bg-primary-300 text-white border border-neutral-800 rounded-full h-9 shadow-[0_0_15px_rgba(139,92,246,0.5)] hover:shadow-[0_0_50px_rgba(139,92,246,0.9)] transition-all duration-300'
           >
             {isLoading ? (
               <>
